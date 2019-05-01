@@ -37,10 +37,10 @@
 		exit 1
 	fi
 
-	BUILD_DIR="${PWD}/build"
+	BUILD_DIR="${PWD}/../build"
 	CMAKE_BUILD_TYPE=Release
 	TIME_BEGIN=$( date -u +%s )
-   INSTALL_PREFIX="/usr/local/eosio.cdt"
+  	INSTALL_PREFIX=$HOME/opt/eosio.cdt
 	VERSION=1.2
 
 	txtbld=$(tput bold)
@@ -96,18 +96,3 @@
 
    install_symlinks   
    create_cmake_symlink "eosio.cdt-config.cmake"
-
-   printf "\n${bldred}\t      ___           ___           ___                       ___\n"
-   printf "\t     /  /\\         /  /\\         /  /\\        ___          /  /\\ \n"
-   printf "\t    /  /:/_       /  /::\\       /  /:/_      /  /\\        /  /::\\ \n"
-   printf "\t   /  /:/ /\\     /  /:/\\:\\     /  /:/ /\\    /  /:/       /  /:/\\:\\ \n"
-   printf "\t  /  /:/ /:/_   /  /:/  \\:\\   /  /:/ /::\\  /__/::\\      /  /:/  \\:\\ \n"
-   printf "\t /__/:/ /:/ /\\ /__/:/ \\__\\:\\ /__/:/ /:/\\:\\ \\__\\/\\:\\__  /__/:/ \\__\\:\\ \n"
-   printf "\t \\  \\:\\/:/ /:/ \\  \\:\\ /  /:/ \\  \\:\\/:/~/:/    \\  \\:\\/\\ \\  \\:\\ /  /:/ \n"
-   printf "\t  \\  \\::/ /:/   \\  \\:\\  /:/   \\  \\::/ /:/      \\__\\::/  \\  \\:\\  /:/ \n"
-   printf "\t   \\  \\:\\/:/     \\  \\:\\/:/     \\__\\/ /:/       /__/:/    \\  \\:\\/:/ \n"
-   printf "\t    \\  \\::/       \\  \\::/        /__/:/        \\__\\/      \\  \\::/ \n"
-   printf "\t     \\__\\/         \\__\\/         \\__\\/                     \\__\\/ \n${txtrst}"
-
-	printf "\\tFor more information:\\n"
-	printf "\\tEOSIO website: https://eos.io\\n"
