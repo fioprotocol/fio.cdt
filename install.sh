@@ -48,13 +48,13 @@
 	txtrst=$(tput sgr0)
 
    create_symlink() {
-      pushd /usr/local/bin &> /dev/null
+      pushd $HOME/opt/eosio.cdt &> /dev/null
       ln -sf ../eosio.cdt/bin/$1 $2
       popd &> /dev/null
    }
 
    install_symlinks() {
-		printf "\\n\\tInstalling EOSIO.CDT Binary Symlinks\\n\\n"
+      printf "\\n\\tInstalling EOSIO.CDT Binary Symlinks\\n\\n"
       create_symlink "llvm-ranlib eosio-ranlib"
       create_symlink "llvm-ar eosio-ar"
       create_symlink "llvm-objdump eosio-objdump"
@@ -71,10 +71,9 @@
    }
    
    create_cmake_symlink() {
-      mkdir -p /usr/local/lib/cmake/eosio.cdt
-      pushd /usr/local/lib/cmake/eosio.cdt &> /dev/null
-      ln -sf ../../../eosio.cdt/lib/cmake/eosio.cdt/$1 $1
-      popd &> /dev/null
+      mkdir -p $HOME/opt/eosio.cdt
+      pushd $HOME/opt/eosio.cdt &> /dev/null
+      ln -sf ../eosio.cdt/lib/cmake/eosio.cdt/$1 $1
    }
 	if [ ! -d "${BUILD_DIR}" ]; then
       printf "\\n\\tError, build.sh has not ran.  Please run ./build.sh first!\\n\\n"
