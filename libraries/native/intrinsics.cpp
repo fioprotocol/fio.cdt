@@ -284,9 +284,9 @@ extern "C" {
       return intrinsics::get().call<intrinsics::current_receiver>();
    }
 
-   void send_response(const char* cstr) {
-     return intrinsics::get().call<intrinsics::send_response>(name);
-   }
+   //void send_response(const char* cstr) {
+  //   return intrinsics::get().call<intrinsics::send_response>(name);
+  // }
 
    void require_recipient( capi_name name ) {
       return intrinsics::get().call<intrinsics::require_recipient>(name);
