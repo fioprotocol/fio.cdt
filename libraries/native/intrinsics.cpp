@@ -283,6 +283,11 @@ extern "C" {
    capi_name current_receiver() {
       return intrinsics::get().call<intrinsics::current_receiver>();
    }
+
+   void send_response(const char* cstr) {
+     return intrinsics::get().call<intrinsics::send_response>(name);
+   }
+
    void require_recipient( capi_name name ) {
       return intrinsics::get().call<intrinsics::require_recipient>(name);
    }
@@ -788,7 +793,7 @@ extern "C" {
    void printui(uint64_t value) {
       return intrinsics::get().call<intrinsics::printui>(value);
    }
-   
+
    void printi128(const int128_t* value) {
       return intrinsics::get().call<intrinsics::printi128>(value);
    }
@@ -796,7 +801,7 @@ extern "C" {
     void printui128(const uint128_t* value) {
       return intrinsics::get().call<intrinsics::printui128>(value);
    }
-  
+
    void printsf(float value) {
       return intrinsics::get().call<intrinsics::printsf>(value);
    }
@@ -808,11 +813,11 @@ extern "C" {
    void printqf(const long double* value) {
       return intrinsics::get().call<intrinsics::printqf>(value);
    }
-   
+
    void printn(uint64_t nm) {
       return intrinsics::get().call<intrinsics::printn>(nm);
    }
-   
+
    void printhex(const void* data, uint32_t len) {
       return intrinsics::get().call<intrinsics::printhex>(data, len);
    }
@@ -844,7 +849,7 @@ extern "C" {
          dest[i] = tmp_buf[i];
       return (void*)dest;
    }
-   
+
    void eosio_assert(uint32_t test, const char* msg) {
       if (test == 0) {
          _prints(msg, eosio::cdt::output_stream_kind::std_err);
@@ -870,14 +875,14 @@ extern "C" {
          longjmp(*___env_ptr, 1);
       }
    }
-   
+
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winvalid-noreturn" 
+#pragma clang diagnostic ignored "-Winvalid-noreturn"
    void abort() {
       eosio_assert(false, "abort");
    }
 #pragma clang diagnostic pop
-   
+
    size_t __builtin_wasm_current_memory() {
       return (size_t)___heap_ptr;
    }

@@ -30,6 +30,7 @@ extern "C" {
 /* macro to align/overalign a type to ensure calls to intrinsics with pointers/references are properly aligned */
 #define ALIGNED(X) __attribute__ ((aligned (16))) X
 
+
 typedef uint64_t capi_name;
 
 /**

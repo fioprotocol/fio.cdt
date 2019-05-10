@@ -185,6 +185,7 @@ eosio_exit
 read_action_data
 action_data_size
 current_receiver
+send_response
 require_recipient
 require_auth
 require_auth2

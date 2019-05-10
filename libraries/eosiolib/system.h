@@ -50,6 +50,8 @@ extern "C" {
     */
    void  eosio_assert_code( uint32_t test, uint64_t code );
 
+   void eosio_assert_message_code( uint32_t test, const char* msg, uint64_t code );
+    
     /**
     *  This method will abort execution of wasm without failing the contract. This is used to bypass all cleanup / destructors that would normally be called.
     *
