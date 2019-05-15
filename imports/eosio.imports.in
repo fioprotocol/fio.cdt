@@ -180,6 +180,7 @@ publication_time
 abort
 eosio_assert
 eosio_assert_message
+eosio_assert_message_code
 eosio_assert_code
 eosio_exit
 read_action_data

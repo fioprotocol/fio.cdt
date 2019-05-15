@@ -284,9 +284,9 @@ extern "C" {
       return intrinsics::get().call<intrinsics::current_receiver>();
    }
 
-   //void send_response(const char* cstr) {
-  //   return intrinsics::get().call<intrinsics::send_response>(name);
-  // }
+   void send_response(const char* cstr) {
+     return intrinsics::get().call<intrinsics::send_response>(cstr);
+   }
 
    void require_recipient( capi_name name ) {
       return intrinsics::get().call<intrinsics::require_recipient>(name);
@@ -862,6 +862,16 @@ extern "C" {
       if (test == 0) {
          _prints_l(msg, len, eosio::cdt::output_stream_kind::std_err);
          _prints_l("\n", 1, eosio::cdt::output_stream_kind::none);
+         longjmp(*___env_ptr, 1);
+      }
+   }
+
+   void eosio_assert_message_code(uint32_t test, const char* msg, uint64_t code) {
+      if (test == 0) {
+        char buff[32];
+         _prints_l(msg, code, eosio::cdt::output_stream_kind::std_err);
+         _prints_l("\n", 1, eosio::cdt::output_stream_kind::none);
+         snprintf(buff, 32, "%llu", code);
          longjmp(*___env_ptr, 1);
       }
    }
