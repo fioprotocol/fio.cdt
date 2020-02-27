@@ -67,14 +67,6 @@ else
    esac
 fi
 
-if [[ `uname` == 'Darwin' ]]; then
-   FREE_MEM=`vm_stat | grep "Pages free:"`
-   read -ra FREE_MEM <<< "$FREE_MEM"
-   FREE_MEM=$((${FREE_MEM[2]%?}*(4096))) # free pages * page size
-else
-   FREE_MEM=`LC_ALL=C free | grep "Mem:" | awk '{print $4}'`
-fi
-
 CORES=`getconf _NPROCESSORS_ONLN`
 
 #check submodules
