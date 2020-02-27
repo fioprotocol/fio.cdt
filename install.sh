@@ -37,7 +37,7 @@
 		exit 1
 	fi
 
-	BUILD_DIR="${PWD}/../build"
+	BUILD_DIR="${PWD}/build"
 	CMAKE_BUILD_TYPE=Release
 	TIME_BEGIN=$( date -u +%s )
   	INSTALL_PREFIX=$HOME/opt/eosio.cdt

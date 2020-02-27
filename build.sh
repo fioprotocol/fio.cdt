@@ -67,18 +67,7 @@ else
    esac
 fi
 
-if [[ `uname` == 'Darwin' ]]; then
-   FREE_MEM=`vm_stat | grep "Pages free:"`
-   read -ra FREE_MEM <<< "$FREE_MEM"
-   FREE_MEM=$((${FREE_MEM[2]%?}*(4096))) # free pages * page size
-else
-   FREE_MEM=`LC_ALL=C free | grep "Mem:" | awk '{print $4}'`
-fi
-
-CORES_AVAIL=`getconf _NPROCESSORS_ONLN`
-MEM_CORES=$(( ${FREE_MEM}/4000000 )) # 4 gigabytes per core
-MEM_CORES=$(( $MEM_CORES > 0 ? $MEM_CORES : 1 ))
-CORES=$(( $CORES_AVAIL < $MEM_CORES ? $CORES_AVAIL : $MEM_CORES ))
+CORES=`getconf _NPROCESSORS_ONLN`
 
 #check submodules
 if [ $(( $(git submodule status --recursive | grep -c "^[+\-]") )) -gt 0 ]; then
