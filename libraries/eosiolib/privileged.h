@@ -29,6 +29,8 @@ extern "C" {
     * @param cpu_weight - fractionally proportionate cpu limit of available resources based on (weight / total_weight_of_all_accounts)
     */
    void set_resource_limits( capi_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
+    
+   int64_t get_account_ram_usage( capi_name account);
 
    /**
     * Proposes a schedule change
