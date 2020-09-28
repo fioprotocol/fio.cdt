@@ -1,18 +1,19 @@
 #pragma once
 
-#include <eosiolib/action.h>
-#include <eosiolib/chain.h>
-#include <eosiolib/crypto.h>
-#include <eosiolib/db.h>
-#include <eosiolib/permission.h>
-#include <eosiolib/print.h>
-#include <eosiolib/privileged.h>
-#include <eosiolib/system.h>
-#include <eosiolib/transaction.h>
-#include <eosiolib/types.h>
+#include <eosio/action.h>
+#include <eosio/chain.h>
+#include <eosio/crypto.h>
+#include <eosio/db.h>
+#include <eosio/permission.h>
+#include <eosio/print.h>
+#include <eosio/privileged.h>
+#include <eosio/system.h>
+#include <eosio/transaction.h>
+#include <eosio/types.h>
 
 #include <type_traits>
 
+#warning "<eosio/native/intrinsics_def.hpp> is deprecated use <eosio/intrinsics_def.hpp>"
 namespace eosio { namespace native {
    template <typename... Args, size_t... Is>
    auto get_args_full(std::index_sequence<Is...>) {
@@ -29,20 +30,19 @@ namespace eosio { namespace native {
    auto get_args(R(Args...)) {
        return std::tuple<std::decay_t<Args>...>{};
    }
-
+   
    template <typename R, typename Args, size_t... Is>
    auto create_function(std::index_sequence<Is...>) {
-      return std::function<R(typename std::tuple_element<Is, Args>::type ...)>{
-         [](typename std::tuple_element<Is, Args>::type ...) {
+      return std::function<R(typename std::tuple_element<Is, Args>::type ...)>{ 
+         [](typename std::tuple_element<Is, Args>::type ...) { 
             eosio_assert(false, "unsupported intrinsic"); return (R)0;
          }
       };
-   }
+   }   
 
 #define INTRINSICS(intrinsic_macro) \
 intrinsic_macro(get_resource_limits) \
 intrinsic_macro(set_resource_limits) \
-intrinsic_macro(get_account_ram_usage) \
 intrinsic_macro(set_proposed_producers) \
 intrinsic_macro(get_blockchain_parameters_packed) \
 intrinsic_macro(set_blockchain_parameters_packed) \
@@ -128,7 +128,6 @@ intrinsic_macro(publication_time) \
 intrinsic_macro(read_action_data) \
 intrinsic_macro(action_data_size) \
 intrinsic_macro(current_receiver) \
-intrinsic_macro(send_response) \
 intrinsic_macro(require_recipient) \
 intrinsic_macro(require_auth) \
 intrinsic_macro(require_auth2) \
@@ -155,7 +154,7 @@ intrinsic_macro(send_inline) \
 intrinsic_macro(send_context_free_inline) \
 intrinsic_macro(send_deferred) \
 intrinsic_macro(cancel_deferred) \
-intrinsic_macro(get_context_free_data)
+intrinsic_macro(get_context_free_data) 
 
 #define CREATE_ENUM(name) \
    name,

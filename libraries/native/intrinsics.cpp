@@ -1,15 +1,15 @@
-#include <eosiolib/action.h>
-#include <eosiolib/chain.h>
-#include <eosiolib/crypto.h>
-#include <eosiolib/db.h>
-#include <eosiolib/permission.h>
-#include <eosiolib/print.h>
-#include <eosiolib/privileged.h>
-#include <eosiolib/system.h>
-#include <eosiolib/transaction.h>
-#include <eosiolib/types.h>
-#include "intrinsics.hpp"
-#include "crt.hpp"
+#include <eosio/action.h>
+#include <eosio/chain.h>
+#include <eosio/crypto.h>
+#include <eosio/db.h>
+#include <eosio/permission.h>
+#include <eosio/print.h>
+#include <eosio/privileged.h>
+#include <eosio/system.h>
+#include <eosio/transaction.h>
+#include <eosio/types.h>
+#include "native/eosio/intrinsics.hpp"
+#include "native/eosio/crt.hpp"
 #include <softfloat.hpp>
 #include <float.h>
 
@@ -22,9 +22,6 @@ extern "C" {
    void set_resource_limits( capi_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
       return intrinsics::get().call<intrinsics::set_resource_limits>(account, ram_bytes, net_weight, cpu_weight);
    }
-   int64_t get_account_ram_usage( capi_name account ) {
-        return intrinsics::get().call<intrinsics::get_account_ram_usage>(account);
-    }
    int64_t set_proposed_producers( char *producer_data, uint32_t producer_data_size ) {
       return intrinsics::get().call<intrinsics::set_proposed_producers>(producer_data, producer_data_size);
    }
@@ -286,11 +283,6 @@ extern "C" {
    capi_name current_receiver() {
       return intrinsics::get().call<intrinsics::current_receiver>();
    }
-
-   void send_response(const char* cstr) {
-     return intrinsics::get().call<intrinsics::send_response>(cstr);
-   }
-
    void require_recipient( capi_name name ) {
       return intrinsics::get().call<intrinsics::require_recipient>(name);
    }
@@ -391,7 +383,6 @@ extern "C" {
    float _eosio_f32_copysign( float af, float bf ) {
       float32_t a = to_softfloat32(af);
       float32_t b = to_softfloat32(bf);
-      uint32_t sign_of_a = a.v >> 31;
       uint32_t sign_of_b = b.v >> 31;
       a.v &= ~(1 << 31);             // clear the sign bit
       a.v = a.v | (sign_of_b << 31); // add the sign of b
@@ -554,7 +545,6 @@ extern "C" {
    double _eosio_f64_copysign( double af, double bf ) {
       float64_t a = to_softfloat64(af);
       float64_t b = to_softfloat64(bf);
-      uint64_t sign_of_a = a.v >> 63;
       uint64_t sign_of_b = b.v >> 63;
       a.v &= ~(uint64_t(1) << 63);             // clear the sign bit
       a.v = a.v | (sign_of_b << 63); // add the sign of b
@@ -607,7 +597,6 @@ extern "C" {
       float64_t ret;
       int e = a.v >> 52 & 0x7FF;
       float64_t y;
-      double de = 1/DBL_EPSILON;
       if ( a.v == 0x8000000000000000) {
          return af;
       }
@@ -796,7 +785,7 @@ extern "C" {
    void printui(uint64_t value) {
       return intrinsics::get().call<intrinsics::printui>(value);
    }
-
+   
    void printi128(const int128_t* value) {
       return intrinsics::get().call<intrinsics::printi128>(value);
    }
@@ -804,7 +793,7 @@ extern "C" {
     void printui128(const uint128_t* value) {
       return intrinsics::get().call<intrinsics::printui128>(value);
    }
-
+  
    void printsf(float value) {
       return intrinsics::get().call<intrinsics::printsf>(value);
    }
@@ -816,11 +805,11 @@ extern "C" {
    void printqf(const long double* value) {
       return intrinsics::get().call<intrinsics::printqf>(value);
    }
-
+   
    void printn(uint64_t nm) {
       return intrinsics::get().call<intrinsics::printn>(nm);
    }
-
+   
    void printhex(const void* data, uint32_t len) {
       return intrinsics::get().call<intrinsics::printhex>(data, len);
    }
@@ -852,7 +841,7 @@ extern "C" {
          dest[i] = tmp_buf[i];
       return (void*)dest;
    }
-
+   
    void eosio_assert(uint32_t test, const char* msg) {
       if (test == 0) {
          _prints(msg, eosio::cdt::output_stream_kind::std_err);
@@ -869,16 +858,6 @@ extern "C" {
       }
    }
 
-   void eosio_assert_message_code(uint32_t test, const char* msg, uint64_t code) {
-      if (test == 0) {
-        char buff[32];
-         _prints_l(msg, code, eosio::cdt::output_stream_kind::std_err);
-         _prints_l("\n", 1, eosio::cdt::output_stream_kind::none);
-         snprintf(buff, 32, "%llu", code);
-         longjmp(*___env_ptr, 1);
-      }
-   }
-
    void eosio_assert_code(uint32_t test, uint64_t code) {
       if (test == 0) {
          char buff[32];
@@ -888,22 +867,11 @@ extern "C" {
          longjmp(*___env_ptr, 1);
       }
    }
-
+   
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winvalid-noreturn"
+#pragma clang diagnostic ignored "-Winvalid-noreturn" 
    void abort() {
       eosio_assert(false, "abort");
    }
 #pragma clang diagnostic pop
-
-   size_t __builtin_wasm_current_memory() {
-      return (size_t)___heap_ptr;
-   }
-
-   size_t __builtin_wasm_grow_memory(size_t size) {
-      if ((___heap_ptr + (size*64*1024)) > (___heap_ptr + 100*1024*1024))
-         eosio_assert(false, "__builtin_wasm_grow_memory");
-      ___heap_ptr += (size*64*1024);
-      return (size_t)___heap_ptr;
-   }
 }

@@ -13,17 +13,18 @@
 #include <limits>
 #include <string_view>
 
+#warning "<eosiolib/symbol.hpp> is deprecated use <eosio/symbol.hpp>"
 namespace eosio {
 
   /**
-   *  @addtogroup symbol Symbol CPP API
-   *  @ingroup cpp_api
-   *  @brief Defines %CPP API for managing symbols
+   *  @addtogroup symbol Symbol C++ API
+   *  @ingroup core
+   *  @brief Defines C++ API for managing symbols
    *  @{
    */
 
    /**
-    * @class Stores the symbol code
+    * @class symbol_code
     * @brief Stores the symbol code as a uint64_t value
     */
    class symbol_code {
@@ -125,17 +126,21 @@ namespace eosio {
        *
        *
        *  @brief Writes the symbol_code as a string to the provided char buffer
-       *  @pre Appropriate Size Precondition: (begin + 7) <= end and (begin + 7) does not overflow
-       *  @pre Valid Memory Region Precondition: The range [begin, end) must be a valid range of memory to write to.
+       *  @pre is_valid() == true
+       *  @pre The range [begin, end) must be a valid range of memory to write to.
        *  @param begin - The start of the char buffer
        *  @param end - Just past the end of the char buffer
-       *  @return char* - Just past the end of the last character written (returns begin if the Appropriate Size Precondition is not satisfied)
-       *  @post If the Appropriate Size Precondition is satisfied, the range [begin, returned pointer) contains the string representation of the symbol_code.
+       *  @param dry_run - If true, do not actually write anything into the range.
+       *  @return char* - Just past the end of the last character that would be written assuming dry_run == false and end was large enough to provide sufficient space. (Meaning only applies if returned pointer >= begin.)
+       *  @post If the output string fits within the range [begin, end) and dry_run == false, the range [begin, returned pointer) contains the string representation of the symbol_code. Nothing is written if dry_run == true or returned pointer > end (insufficient space) or if returned pointer < begin (overflow in calculating desired end).
        */
-      char* write_as_string( char* begin, char* end )const {
+      char* write_as_string( char* begin, char* end, bool dry_run = false )const {
          constexpr uint64_t mask = 0xFFull;
 
-         if( (begin + 7) < begin || (begin + 7) > end ) return begin;
+         if( dry_run || (begin + 7 < begin) || (begin + 7 > end) ) {
+            char* actual_end = begin + length();
+            if( dry_run || (actual_end < begin) || (actual_end > end) ) return actual_end;
+         }
 
          auto v = value;
          for( auto i = 0; i < 7; ++i, v >>= 8 ) {
@@ -187,15 +192,47 @@ namespace eosio {
       friend constexpr bool operator < ( const symbol_code& a, const symbol_code& b ) {
          return a.value < b.value;
       }
+      /**
+      *  Serialize a symbol_code into a stream
+      *
+      *  @brief Serialize a symbol_code
+      *  @param ds - The stream to write
+      *  @param sym - The value to serialize
+      *  @tparam DataStream - Type of datastream buffer
+      *  @return DataStream& - Reference to the datastream
+      */
+      template<typename DataStream>
+      friend inline DataStream& operator<<(DataStream& ds, const eosio::symbol_code sym_code) {
+         uint64_t raw = sym_code.raw();
+         ds.write( (const char*)&raw, sizeof(raw));
+         return ds;
+      }
+
+      /**
+      *  Deserialize a symbol_code from a stream
+      *
+      *  @brief Deserialize a symbol_code
+      *  @param ds - The stream to read
+      *  @param symbol - The destination for deserialized value
+      *  @tparam DataStream - Type of datastream buffer
+      *  @return DataStream& - Reference to the datastream
+      */
+      template<typename DataStream>
+      friend inline DataStream& operator>>(DataStream& ds, eosio::symbol_code& sym_code) {
+         uint64_t raw = 0;
+         ds.read((char*)&raw, sizeof(raw));
+         sym_code = symbol_code(raw);
+         return ds;
+      }
 
    private:
       uint64_t value = 0;
    };
 
    /**
-    * @struct Stores information about a symbol, the symbol can be 7 characters long.
+    * @struct symbol
     *
-    * @brief Stores information about a symbol
+    * @brief information about a symbol, the symbol can be 7 characters long
     */
    class symbol {
    public:
@@ -312,8 +349,9 @@ namespace eosio {
    };
 
    /**
-    * @struct Extended asset which stores the information of the owner of the symbol
-    *
+    * @struct extended_symbol
+    * 
+    * @brief Extended asset which stores the information of the owner of the symbol
     */
    class extended_symbol
    {
@@ -335,14 +373,14 @@ namespace eosio {
        * @param con - The name of the contract
        *
        */
-      constexpr extended_symbol( symbol sym, name con ) : symbol(sym), contract(con) {}
+      constexpr extended_symbol( symbol s, name con ) : sym(s), contract(con) {}
 
       /**
        * Returns the symbol in the extended_contract
        *
        * @return symbol
        */
-      constexpr symbol get_symbol() const { return symbol; }
+      constexpr symbol get_symbol() const { return sym; }
 
       /**
        * Returns the name of the contract in the extended_symbol
@@ -357,7 +395,7 @@ namespace eosio {
        * @brief %Print the extended symbol
        */
       void print( bool show_precision = true )const {
-         symbol.print( show_precision );
+         sym.print( show_precision );
          prints("@");
          printn( contract.value );
       }
@@ -369,7 +407,7 @@ namespace eosio {
        * @return boolean - true if both provided extended_symbols are the same
        */
       friend constexpr bool operator == ( const extended_symbol& a, const extended_symbol& b ) {
-        return std::tie( a.symbol, a.contract ) == std::tie( b.symbol, b.contract );
+        return std::tie( a.sym, a.contract ) == std::tie( b.sym, b.contract );
       }
 
       /**
@@ -379,7 +417,7 @@ namespace eosio {
        * @return boolean - true if both provided extended_symbols are not the same
        */
       friend constexpr bool operator != ( const extended_symbol& a, const extended_symbol& b ) {
-        return std::tie( a.symbol, a.contract ) != std::tie( b.symbol, b.contract );
+        return std::tie( a.sym, a.contract ) != std::tie( b.sym, b.contract );
       }
 
       /**
@@ -388,14 +426,14 @@ namespace eosio {
        * @return boolean - true if extended_symbol `a` is less than `b`
        */
       friend constexpr bool operator < ( const extended_symbol& a, const extended_symbol& b ) {
-        return std::tie( a.symbol, a.contract ) < std::tie( b.symbol, b.contract );
+        return std::tie( a.sym, a.contract ) < std::tie( b.sym, b.contract );
       }
 
    private:
-      symbol symbol; ///< the symbol
+      symbol sym; ///< the symbol
       name   contract; ///< the token contract hosting the symbol
 
-      EOSLIB_SERIALIZE( extended_symbol, (symbol)(contract) )
+      EOSLIB_SERIALIZE( extended_symbol, (sym)(contract) )
    };
 
    /// @}

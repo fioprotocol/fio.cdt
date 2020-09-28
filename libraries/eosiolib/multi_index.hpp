@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <memory>
 
+#warning "<eosiolib/multi_index.hpp> is deprecated use <eosio/multi_index.hpp>"
+
 namespace eosio {
 
 constexpr static inline name same_payer{};
@@ -143,12 +145,6 @@ namespace _multi_index_detail {
       static constexpr long double true_lowest() { return -std::numeric_limits<long double>::infinity(); }
    };
 
-   WRAP_SECONDARY_ARRAY_TYPE(idx256, eosio::key256)
-   template<>
-   struct secondary_key_traits<eosio::key256> {
-      static constexpr eosio::key256 true_lowest() { return eosio::key256(); }
-   };
-
    WRAP_SECONDARY_ARRAY_TYPE(idx256, eosio::fixed_bytes<32>)
    template<>
    struct secondary_key_traits<eosio::fixed_bytes<32>> {
@@ -196,9 +192,9 @@ struct indexed_by {
 };
 
 /**
- *  @defgroup multiindex Multi Index Table
+ *  @defgroup multi_index Multi Index Table
  *  @brief Defines EOSIO Multi Index Table
- *  @ingroup cpp_api
+ *  @ingroup contracts
  *
  *  @details EOSIO Multi-Index API provides a C++ interface to the EOSIO database. It is patterned after Boost Multi Index Container.
  *  EOSIO Multi-Index table requires exactly a uint64_t primary key. For the table to be able to retrieve the primary key,
@@ -1061,7 +1057,7 @@ class multi_index
       }
 
       /**
-       *  Searches for the `object_type` with the highest primary key that is less than or equal to a given primary key.
+       *  Searches for the `object_type` with the lowest primary key that is greater than a given primary key.
        *
        *  @param primary - Primary key that establishes the target value for the upper bound search
        *  @return An iterator pointing to the `object_type` that has the highest primary key that is less than or equal to `primary`. If an object could not be found, it will return the `end` iterator. If the table does not exist** it will return `-1`.

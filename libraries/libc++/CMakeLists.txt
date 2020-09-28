@@ -18,22 +18,24 @@ add_native_library(native_c++
 
 target_include_directories(c++
                            PUBLIC 
+                           ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include
                            ${CMAKE_SOURCE_DIR}/libc/musl/include
                            ${CMAKE_SOURCE_DIR}/libc/musl/src/internal
                            ${CMAKE_SOURCE_DIR}/libc/musl/src/crypt
-                           ${CMAKE_SOURCE_DIR}/libc/musl/arch/eos
-                           ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include)
+                           ${CMAKE_SOURCE_DIR}/libc/musl/arch/eos)
 
 target_include_directories(native_c++
                            PUBLIC 
+                           ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include
                            ${CMAKE_SOURCE_DIR}/libc/musl/include
                            ${CMAKE_SOURCE_DIR}/libc/musl/src/internal
                            ${CMAKE_SOURCE_DIR}/libc/musl/src/crypt
-                           ${CMAKE_SOURCE_DIR}/libc/musl/arch/eos
-                           ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include)
+                           ${CMAKE_SOURCE_DIR}/libc/musl/arch/eos)
 
 target_link_libraries(c++ c)
 target_link_libraries(native_c++ native_c)
+
+target_compile_options(native_c++ PUBLIC -allow-sse)
 
 add_custom_command( TARGET c++ POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:c++> ${BASE_BINARY_DIR}/lib )
 
