@@ -44,6 +44,10 @@ extern "C" {
    __attribute__((eosio_wasm_import))
    void  eosio_assert_message( uint32_t test, const char* msg, uint32_t msg_len );
 
+   /** Added by FIO **/
+   __attribute__((eosio_wasm_import))
+   void eosio_assert_message_code( uint32_t test, const char* msg, uint64_t code );
+
    /**
     *  Aborts processing of this action and unwinds all pending changes if the test condition is true
     *
@@ -92,4 +96,3 @@ extern "C" {
 }
 #endif
   ///@}
-

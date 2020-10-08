@@ -167,5 +167,18 @@ extern "C" {
    __attribute__((eosio_wasm_import))
    capi_name current_receiver();
 
-   /// @} action
+   /**
+   *  Returns data string back to action callee.
+   *  @brief Returns data string back to action callee.
+   *  @param cstr - a null terminated string
+   *
+   *  Example:
+   *
+   *  @code
+   *  send_response("{"status":"1"}");
+   *  @endcode
+   */
+  __attribute__((eosio_wasm_import))
+  void send_response( const char* cstr );
+  ///@ } actioncapi
 }
