@@ -19,6 +19,10 @@ namespace eosio {
 
          __attribute__((eosio_wasm_import))
          void eosio_assert_code( uint32_t test, uint64_t code );
+
+         /** Added by FIO **/
+         __attribute__((eosio_wasm_import))
+         void eosio_assert_message_code( uint32_t test, const char* msg, uint64_t code );
       }
    }
 
