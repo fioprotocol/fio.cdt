@@ -18,6 +18,9 @@ namespace eosio {
         void set_resource_limits( uint64_t account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight );
 
         __attribute__((eosio_wasm_import))
+        int64_t get_account_ram_usage( name account);
+
+        __attribute__((eosio_wasm_import))
         void set_privileged( uint64_t account, bool is_priv );
 
         __attribute__((eosio_wasm_import))
