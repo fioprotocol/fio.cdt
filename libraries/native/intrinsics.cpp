@@ -871,6 +871,16 @@ extern "C" {
       }
    }
 
+   void eosio_assert_message_code(uint32_t test, const char* msg, uint64_t code) {
+      if (test == 0) {
+        char buff[32];
+         _prints_l(msg, code, eosio::cdt::output_stream_kind::std_err);
+         _prints_l("\n", 1, eosio::cdt::output_stream_kind::none);
+         snprintf(buff, 32, "%llu", code);
+         longjmp(*___env_ptr, 1);
+      }
+   }
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-noreturn"
    void abort() {
