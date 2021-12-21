@@ -1,20 +1,18 @@
 #! /bin/bash
 
-VERS=`sw_vers -productVersion | awk '/10\.13\..*/{print $0}'`
-if [[ -z "$VERS" ]];
-then
-   VERS=`sw_vers -productVersion | awk '/10\.14.*/{print $0}'`
-   if [[ -z "$VERS" ]];
-   then
+VERS=`sw_vers -productVersion | awk '/10\.14\..*/{print $0}'`
+if [[ -z "$VERS" ]]; then
+   VERS=`sw_vers -productVersion | awk '/10\.15.*/{print $0}'`
+   if [[ -z $VERS ]]; then
       echo "Error, unsupported OS X version"
       exit -1
    fi
-   MAC_VERSION="mojave"
+   MAC_VERSION="catalina"
 else
-   MAC_VERSION="high_sierra"
+   MAC_VERSION="mojave"
 fi
 
-NAME="${PROJECT}-${VERSION}.${MAC_VERSION}.bottle.tar.gz"
+NAME="${PROJECT}-${VERSION}.${MAC_VERSION}.bottle"
 
 mkdir -p ${PROJECT}/${VERSION}/opt/eosio_cdt/lib/cmake
 
@@ -28,9 +26,9 @@ export SPREFIX
 export SUBPREFIX
 export SSUBPREFIX
 
-bash generate_tarball.sh ${NAME}
+. ./generate_tarball.sh ${NAME}
 
-hash=`openssl dgst -sha256 ${NAME} | awk 'NF>1{print $NF}'`
+hash=`openssl dgst -sha256 ${NAME}.tar.gz | awk 'NF>1{print $NF}'`
 
 echo "class EosioCdt < Formula
 
@@ -64,4 +62,4 @@ echo "class EosioCdt < Formula
 end
 __END__" &> eosio.cdt.rb
 
-rm -r ${PROJECT}
+rm -r ${PROJECT} || exit 1

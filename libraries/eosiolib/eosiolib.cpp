@@ -5,6 +5,9 @@
 
 #include <algorithm>
 
+extern "C" volatile uint64_t eosio_contract_name = 0;
+extern "C" volatile void eosio_set_contract_name(uint64_t n) { eosio_contract_name = n; } // LLVM creates the call to this at the beginning of apply
+
 namespace eosio {
    extern "C" {
       __attribute__((eosio_wasm_import))
@@ -17,6 +20,33 @@ namespace eosio {
      int64_t set_proposed_producers( char *producer_data, uint32_t producer_data_size );
      __attribute__((eosio_wasm_import))
      uint32_t get_active_producers(uint64_t*, uint32_t);
+   }
+
+   // producer_schedule.hpp
+   bool block_signing_authority_v0::is_valid()const {
+      uint32_t sum_weights = 0;
+      std::set<eosio::public_key> unique_keys;
+
+      for (const auto& kw: keys ) {
+         if( std::numeric_limits<uint32_t>::max() - sum_weights <= kw.weight ) {
+            sum_weights = std::numeric_limits<uint32_t>::max();
+         } else {
+            sum_weights += kw.weight;
+         }
+
+         unique_keys.insert(kw.key);
+      }
+
+      if( keys.size() != unique_keys.size() )
+         return false; // producer authority includes a duplicated key
+
+      if( threshold == 0 )
+         return false; // producer authority has a threshold of 0
+
+      if( sum_weights < threshold )
+         return false; // producer authority is unsatisfiable
+
+      return true;
    }
 
    // privileged.hpp
@@ -80,7 +110,6 @@ namespace eosio {
     *  @post If the output string fits within the range [begin, end), the range [begin, returned pointer) contains the string representation of the number. Nothing is written if dry_run == true or returned pointer > end (insufficient space) or if returned pointer < begin (overflow in calculating desired end).
     */
    char* write_decimal( char* begin, char* end, bool dry_run, uint64_t number, uint8_t num_decimal_places, bool negative ) {
-      constexpr static uint8_t log10_max_uint64 = powers_of_base<10, uint64_t>.size() - 1; // 19
       const auto& powers_of_ten = powers_of_base<10, uint64_t>;
 
       uint8_t num_digits = (std::upper_bound( powers_of_ten.begin(), powers_of_ten.end(), number ) - powers_of_ten.begin()); // num_digits == 0 iff number == 0

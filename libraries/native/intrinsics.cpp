@@ -22,8 +22,14 @@ extern "C" {
    void set_resource_limits( capi_name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight ) {
       return intrinsics::get().call<intrinsics::set_resource_limits>(account, ram_bytes, net_weight, cpu_weight);
    }
+   int64_t get_account_ram_usage( capi_name account ) {
+      return intrinsics::get().call<intrinsics::get_account_ram_usage>(account);
+   }
    int64_t set_proposed_producers( char *producer_data, uint32_t producer_data_size ) {
       return intrinsics::get().call<intrinsics::set_proposed_producers>(producer_data, producer_data_size);
+   }
+   int64_t set_proposed_producers_ex( uint64_t producer_data_format, char *producer_data, uint32_t producer_data_size ) {
+      return intrinsics::get().call<intrinsics::set_proposed_producers_ex>(producer_data_format, producer_data, producer_data_size);
    }
    uint32_t get_blockchain_parameters_packed( char* data, uint32_t datalen ) {
       return intrinsics::get().call<intrinsics::get_blockchain_parameters_packed>(data, datalen);
@@ -31,11 +37,20 @@ extern "C" {
    void set_blockchain_parameters_packed( char* data, uint32_t datalen ) {
       return intrinsics::get().call<intrinsics::set_blockchain_parameters_packed>(data, datalen);
    }
+   void set_kv_parameters_packed( const char* data, uint32_t datalen ) {
+      return intrinsics::get().call<intrinsics::set_kv_parameters_packed>(data, datalen);
+   }
    bool is_privileged( capi_name account ) {
       return intrinsics::get().call<intrinsics::is_privileged>(account);
    }
    void set_privileged( capi_name account, bool is_priv ) {
       return intrinsics::get().call<intrinsics::set_privileged>(account, is_priv);
+   }
+   bool is_feature_activated( const capi_checksum256* feature_digest ) {
+      return intrinsics::get().call<intrinsics::is_feature_activated>(feature_digest);
+   }
+   void preactivate_feature( const capi_checksum256* feature_digest ) {
+      return intrinsics::get().call<intrinsics::preactivate_feature>(feature_digest);
    }
    uint32_t get_active_producers( capi_name* producers, uint32_t datalen ) {
       return intrinsics::get().call<intrinsics::get_active_producers>(producers, datalen);
@@ -286,6 +301,9 @@ extern "C" {
    void send_response(const char* cstr) {
      return intrinsics::get().call<intrinsics::send_response>(cstr);
    }
+   void set_action_return_value( void* rv, size_t len ) {
+      intrinsics::get().call<intrinsics::set_action_return_value>(rv, len);
+   }
    void require_recipient( capi_name name ) {
       return intrinsics::get().call<intrinsics::require_recipient>(name);
    }
@@ -325,14 +343,17 @@ extern "C" {
    void send_context_free_inline(char *serialized_action, size_t size) {
       return intrinsics::get().call<intrinsics::send_context_free_inline>(serialized_action, size);
    }
-   void send_deferred(const uint128_t& sender_id, capi_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
+   void send_deferred(const uint128_t* sender_id, capi_name payer, const char *serialized_transaction, size_t size, uint32_t replace_existing) {
       return intrinsics::get().call<intrinsics::send_deferred>(sender_id, payer, serialized_transaction, size, replace_existing);
    }
-   int cancel_deferred(const uint128_t& sender_id) {
+   int cancel_deferred(const uint128_t* sender_id) {
       return intrinsics::get().call<intrinsics::cancel_deferred>(sender_id);
    }
    int get_context_free_data( uint32_t index, char* buff, size_t size ) {
       return intrinsics::get().call<intrinsics::get_context_free_data>(index, buff, size);
+   }
+   capi_name get_sender() {
+      return intrinsics::get().call<intrinsics::get_sender>();
    }
 
    // softfloat

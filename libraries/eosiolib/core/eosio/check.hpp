@@ -4,8 +4,8 @@
  */
 #pragma once
 
-#include <alloca.h>
 #include <string>
+#include <string_view>
 
 namespace eosio {
 
@@ -31,6 +31,22 @@ namespace eosio {
     *  @ingroup core
     *  @brief Defines wrappers over eosio_assert
     */
+
+
+   /**
+    *  Assert if the predicate fails and use the supplied message.
+    *
+    *  @ingroup system
+    *
+    *  Example:
+    *  @code
+    *  eosio::check(a == b, "a does not equal b");
+    *  @endcode
+    */
+   inline void check(bool pred, std::string_view msg) {
+      if (!pred)
+         internal_use_do_not_use::eosio_assert_message(false, msg.data(), msg.size());
+   }
 
    /**
     *  Assert if the predicate fails and use the supplied message.
@@ -60,7 +76,7 @@ namespace eosio {
     */
    inline void check(bool pred, const std::string& msg) {
       if (!pred) {
-         internal_use_do_not_use::eosio_assert(false, msg.c_str());
+         internal_use_do_not_use::eosio_assert_message(false, msg.data(), msg.size());
       }
    }
 
@@ -76,9 +92,10 @@ namespace eosio {
     */
    inline void check(bool pred, std::string&& msg) {
       if (!pred) {
-         internal_use_do_not_use::eosio_assert(false, msg.c_str());
+         internal_use_do_not_use::eosio_assert_message(false, msg.data(), msg.size());
       }
    }
+
 
    /**
     *  Assert if the predicate fails and use a subset of the supplied message.
@@ -110,7 +127,7 @@ namespace eosio {
     */
    inline void check(bool pred, const std::string& msg, size_t n) {
       if (!pred) {
-         internal_use_do_not_use::eosio_assert_message(false, msg.c_str(), n);
+         internal_use_do_not_use::eosio_assert_message(false, msg.data(), n);
       }
    }
 

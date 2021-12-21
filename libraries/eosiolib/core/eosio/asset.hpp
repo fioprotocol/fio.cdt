@@ -19,8 +19,7 @@ namespace eosio {
     */
 
    /**
-    *  @struct asset
-    *  @brief Stores information for owner of asset
+    *  Stores information for owner of asset
     *
     *  @ingroup asset
     */
@@ -386,8 +385,7 @@ namespace eosio {
    };
 
   /**
-   *  @struct extended_asset
-   *  @brief Extended asset which stores the information of the owner of the asset
+   *  Extended asset which stores the information of the owner of the asset
    *
    *  @ingroup asset
    */

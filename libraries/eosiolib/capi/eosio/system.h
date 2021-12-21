@@ -52,12 +52,9 @@ void  eosio_assert_message( uint32_t test, const char* msg, uint32_t msg_len );
 __attribute__((eosio_wasm_import))
 void  eosio_assert_code( uint32_t test, uint64_t code );
 
-
 /** Added by FIO **/
 __attribute__((eosio_wasm_import))
 void eosio_assert_message_code( uint32_t test, const char* msg, uint64_t code );
-
-
 
  /**
  *  This method will abort execution of wasm without failing the contract. This is used to bypass all cleanup / destructors that would normally be called.
@@ -81,7 +78,24 @@ void eosio_exit( int32_t code );
  *  @return time in microseconds from 1970 of the current block
  */
 __attribute__((eosio_wasm_import))
-uint64_t  current_time();
+uint64_t  current_time( void );
+
+/**
+ * Check if specified protocol feature has been activated
+ *
+ * @param feature_digest - digest of the protocol feature
+ * @return true if the specified protocol feature has been activated, false otherwise
+ */
+__attribute__((eosio_wasm_import))
+bool is_feature_activated( const struct capi_checksum256* feature_digest );
+
+/**
+ * Return name of account that sent current inline action
+ *
+ * @return name of account that sent the current inline action (empty name if not called from inline action)
+ */
+__attribute__((eosio_wasm_import))
+capi_name get_sender( void );
 
 #ifdef __cplusplus
 }

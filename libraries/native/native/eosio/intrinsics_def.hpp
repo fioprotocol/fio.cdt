@@ -42,11 +42,16 @@ namespace eosio { namespace native {
 #define INTRINSICS(intrinsic_macro) \
 intrinsic_macro(get_resource_limits) \
 intrinsic_macro(set_resource_limits) \
+intrinsic_macro(get_account_ram_usage) \
 intrinsic_macro(set_proposed_producers) \
+intrinsic_macro(set_proposed_producers_ex) \
 intrinsic_macro(get_blockchain_parameters_packed) \
 intrinsic_macro(set_blockchain_parameters_packed) \
+intrinsic_macro(set_kv_parameters_packed) \
 intrinsic_macro(is_privileged) \
 intrinsic_macro(set_privileged) \
+intrinsic_macro(is_feature_activated) \
+intrinsic_macro(preactivate_feature) \
 intrinsic_macro(get_active_producers) \
 intrinsic_macro(db_idx64_store) \
 intrinsic_macro(db_idx64_remove) \
@@ -154,7 +159,9 @@ intrinsic_macro(send_inline) \
 intrinsic_macro(send_context_free_inline) \
 intrinsic_macro(send_deferred) \
 intrinsic_macro(cancel_deferred) \
-intrinsic_macro(get_context_free_data)
+intrinsic_macro(get_context_free_data) \
+intrinsic_macro(get_sender) \
+intrinsic_macro(set_action_return_value)
 
 #define CREATE_ENUM(name) \
    name,

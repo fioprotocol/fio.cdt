@@ -39,7 +39,9 @@ using eosio::ignore;
 using eosio::ignore_wrapper;
 using eosio::pack;
 using eosio::pack_size;
+using eosio::ecc_public_key;
 using eosio::public_key;
+using eosio::ecc_signature;
 using eosio::signature;
 using eosio::symbol;
 using eosio::symbol_code;
@@ -77,7 +79,7 @@ EOSIO_TEST_BEGIN(datastream_test)
    CHECK_EQUAL( ds.read(buffer, 256), true )
    CHECK_EQUAL( memcmp(buffer, datastream_buffer, 256), 0)
 
-   CHECK_ASSERT( "read", ([&]() {ds.read(buffer, 1);}) )
+   CHECK_ASSERT( "datastream attempted to read past the end", ([&]() {ds.read(buffer, 1);}) )
 
    // T pos()const
    CHECK_EQUAL( ds.pos(), datastream_buffer+256 )
@@ -92,7 +94,7 @@ EOSIO_TEST_BEGIN(datastream_test)
    CHECK_EQUAL( ds.write(buffer, 256), true )
    CHECK_EQUAL( memcmp(buffer, datastream_buffer, 256), 0 )
 
-   CHECK_ASSERT( "write", ([&]() {ds.write(buffer, 1);}) )
+   CHECK_ASSERT( "datastream attempted to write past the end", ([&]() {ds.write(buffer, 1);}) )
 
    // inline bool put(char)
    ds.seekp(0);
@@ -507,7 +509,7 @@ EOSIO_TEST_BEGIN(datastream_stream_test)
    // eosio::public_key
    ds.seekp(0);
    fill(begin(datastream_buffer), end(datastream_buffer), 0);
-   static const public_key cpubkey{{},'a','b','c','d','e','f','g','h','i'};
+   static const public_key cpubkey(std::in_place_index<0>,ecc_public_key{'a','b','c','d','e','f','g','h','i'});
    public_key pubkey{};
    ds << cpubkey;
    ds.seekp(0);
@@ -518,7 +520,7 @@ EOSIO_TEST_BEGIN(datastream_stream_test)
    // eosio::signature
    ds.seekp(0);
    fill(begin(datastream_buffer), end(datastream_buffer), 0);
-   static const signature csig{{},'a','b','c','d','e','f','g','h','i'};
+   static const signature csig(std::in_place_index<0>,ecc_signature{'a','b','c','d','e','f','g','h','i'});
    signature sig{};
    ds << csig;
    ds.seekp(0);

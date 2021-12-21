@@ -264,5 +264,6 @@ int main(int argc, char* argv[]) {
    silence_output(!verbose);
 
    EOSIO_TEST(binary_extension_test);
+   EOSIO_TEST(binary_extension_assignment_test);
    return has_failed();
 }
