@@ -1,4 +1,5 @@
-	OS_VER=$( grep VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/[^0-9\.]//gI' )
+	OS_NAME=$(grep ^NAME /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI' )
+    OS_VER=$(grep VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/[^0-9\.]//gI' )
 	OS_MAJ=$(echo "${OS_VER}" | cut -d'.' -f1)
 	OS_MIN=$(echo "${OS_VER}" | cut -d'.' -f2)
 
@@ -53,7 +54,8 @@
 		exit 1
 	fi
 
-	DEP_ARRAY=(clang-4.0 lldb-4.0 libclang-4.0-dev cmake make automake libbz2-dev libssl-dev \
+    //DEP_ARRAY=(clang-4.0 lldb-4.0 libclang-4.0-dev cmake make automake libbz2-dev libssl-dev \
+	DEP_ARRAY=(cmake make automake libbz2-dev libssl-dev \
 	libgmp3-dev autotools-dev build-essential libicu-dev python2.7-dev python3-dev \
     autoconf libtool curl zlib1g-dev doxygen graphviz)
 	COUNT=1

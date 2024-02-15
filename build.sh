@@ -23,14 +23,15 @@ else # noexec wasn't found
 fi
 
 unamestr=`uname`
+OS_NAME=$(grep ^NAME /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI' )
+OS_VER=$(grep VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/[^0-9\.]//gI' )
+OS_MAJ=$(echo "${OS_VER}" | cut -d'.' -f1)
 if [[ "${unamestr}" == 'Darwin' ]]; then
    BOOST=/usr/local
    CXX_COMPILER=g++
    export ARCH="Darwin"
    bash ./scripts/eosio_build_darwin.sh
 else
-   OS_NAME=$( cat /etc/os-release | grep ^NAME | cut -d'=' -f2 | sed 's/\"//gI' )
-
    case "$OS_NAME" in
       "Amazon Linux AMI")
          export ARCH="Amazon Linux AMI"
@@ -59,7 +60,7 @@ else
          ;;
       "Debian GNU/Linux")
          export ARCH="Debian"
-	 bash ./scripts/eosio_build_ubuntu.sh
+         bash ./scripts/eosio_build_ubuntu.sh
 	 ;;
       *)
          printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
@@ -74,6 +75,18 @@ if [ $(( $(git submodule status --recursive | grep -c "^[+\-]") )) -gt 0 ]; then
    printf "\\n\\tgit submodules are not up to date.\\n"
    printf "\\tPlease run the command 'git submodule update --init --recursive'.\\n"
    exit 1
+fi
+
+# Apply patch for ubuntu OSs
+echo "Checking if ubuntu 20+ patch should be applied..."
+echo "unamestr: ${unamestr}"
+echo "OS Name: $OS_NAME"
+echo "OS Major Release Nbr: $OS_MAJ"
+if [[ "${unamestr}" != 'Darwin'  && "${OS_NAME}" == "Ubuntu" ]]; then
+  if [[ "${OS_MAJ}" == "20" ]]; then
+    echo "Applying patch for ubuntu 20+..."
+    git apply ./patches/fio.cdt-lexer-source-a702a46.patch
+  fi
 fi
 
 mkdir -p build
