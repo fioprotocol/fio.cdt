@@ -67,3 +67,17 @@ function set-system-vars() {
     export CPU_CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
     export JOBS=${JOBS:-$(( MEM_GIG > CPU_CORES ? CPU_CORES : $(getconf _NPROCESSORS_ONLN) ))}
 }
+
+function apply-clang-ubuntu20-patches() {
+    echo "Applying lexer-source redundant move patch for ubuntu 20+..."
+    $(git apply --check ./patches/fio.cdt_lexer-source_a702a46.patch &>/dev/null) && git apply ./patches/fio.cdt_lexer-source_a702a46.patch
+}
+
+function apply-clang-ubuntu22-patches() {
+    apply-clang-ubuntu20-patches
+
+    echo "Applying limits patch to fio.cdt eosio-llvm submodule for ubuntu 22..."
+    pushd eosio_llvm
+    $(git apply --check ../patches/fio.cdt_eosio-llvm_limits.patch &>/dev/null) && git apply ../patches/fio.cdt_eosio-llvm_limits.patch
+    popd
+}

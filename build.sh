@@ -93,18 +93,14 @@ if [ $(($(git submodule status --recursive | grep -c "^[+\-]"))) -gt 0 ]; then
    exit 1
 fi
 
-# Apply patch for ubuntu 20+
+# Apply patches for ubuntu 20+
 echo
-if [[ "${unamestr}" != 'Darwin' && "${OS_NAME}" == "Ubuntu" ]]; then
-   if [[ "${OS_MAJ}" == "20" || "${OS_MAJ}" == "22" ]]; then
-      echo "Applying patch for ubuntu 20+..."
-      git apply ./patches/fio.cdt_lexer-source_a702a46.patch
+if [[ "${unamestr}" == 'Linux' && "${OS_NAME}" == "Ubuntu" ]]; then
+   if [[ "${OS_MAJ}" == "20" ]]; then
+      apply-clang-ubuntu20-patches
    fi
    if [[ "${OS_MAJ}" == "22" ]]; then
-      echo "Applying patch for ubuntu 22..."
-      pushd eosio_llvm
-      git apply ../patches/fio.cdt_eosio-llvm_limits.patch
-      popd
+      apply-clang-ubuntu22-patches
    fi
 fi
 
