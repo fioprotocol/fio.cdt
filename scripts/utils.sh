@@ -4,7 +4,8 @@ function ensure-cmake() {
     echo
     echo "${COLOR_CYAN}[Ensuring CMAKE installation]${COLOR_NC}"
     if [[ ! -e "${CMAKE}" ]]; then
-        execute bash -c "cd $SRC_DIR \
+        execute bash -c "mkdir -p $SRC_DIR \
+            && cd $SRC_DIR \
             && curl -LO https://cmake.org/files/v${CMAKE_VERSION_MAJOR}.${CMAKE_VERSION_MINOR}/cmake-${CMAKE_VERSION}.tar.gz \
             && tar -xzf cmake-${CMAKE_VERSION}.tar.gz \
             && cd cmake-${CMAKE_VERSION} \
@@ -77,7 +78,7 @@ function apply-clang-ubuntu22-patches() {
     apply-clang-ubuntu20-patches
 
     echo "Applying limits patch to fio.cdt eosio-llvm submodule for ubuntu 22..."
-    pushd eosio_llvm
+    pushd eosio_llvm > /dev/null
     $(git apply --check ../patches/fio.cdt_eosio-llvm_limits.patch &>/dev/null) && git apply ../patches/fio.cdt_eosio-llvm_limits.patch
-    popd
+    popd > /dev/null
 }
