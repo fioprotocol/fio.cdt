@@ -128,7 +128,7 @@ printf " \\:\\/:/  /    \\/\\:\\  \\__   \\:\\  \\ /:/  / \n"
 printf "  \\::/__/        \\:\\/\\__\\   \\:\\  /:/  /    \n"
 printf "   \\:\\  \\         \\::/  /    \\:\\/:/  /      \n"
 printf "    \\:\\__\\        /:/  /      \\::/  /         \n"
-printf "     \\/__/        \\/__/        \\/__/           \n"
+printf "     \\/__/        \\/__/        \\/__/           \n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
 printf "\\tFIO website: https://fio.net\\n"

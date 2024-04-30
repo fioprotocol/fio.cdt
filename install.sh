@@ -46,10 +46,12 @@ txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
 txtrst=$(tput sgr0)
 
+. ./scripts/utils.sh
+
 create_symlink() {
-   pushd /usr/local/bin &>/dev/null
+   pushd /usr/local/bin
    ln -sf ../eosio.cdt/bin/$1 $2
-   popd &>/dev/null
+   popd
 }
 
 install_symlinks() {
@@ -71,9 +73,9 @@ install_symlinks() {
 
 create_cmake_symlink() {
    mkdir -p /usr/local/lib/cmake/eosio.cdt
-   pushd /usr/local/lib/cmake/eosio.cdt &>/dev/null
+   pushd /usr/local/lib/cmake/eosio.cdt
    ln -sf ../../../eosio.cdt/lib/cmake/eosio.cdt/$1 $1
-   popd &>/dev/null
+   popd
 }
 if [ ! -d "${BUILD_DIR}" ]; then
    printf "\\n\\tError, build.sh has not ran.  Please run ./build.sh first!\\n\\n"
@@ -89,7 +91,7 @@ if ! make install; then
    printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing FIO.cdt has exited with the above error.\\n\\n"
    exit -1
 fi
-popd &>/dev/null
+popd
 
 install_symlinks
 create_cmake_symlink "eosio.cdt-config.cmake"
@@ -105,7 +107,7 @@ printf " \\:\\/:/  /    \\/\\:\\  \\__   \\:\\  \\ /:/  / \n"
 printf "  \\::/__/        \\:\\/\\__\\   \\:\\  /:/  /    \n"
 printf "   \\:\\  \\         \\::/  /    \\:\\/:/  /      \n"
 printf "    \\:\\__\\        /:/  /      \\::/  /         \n"
-printf "     \\/__/        \\/__/        \\/__/           \n"
+printf "     \\/__/        \\/__/        \\/__/           \n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
 printf "\\tFIO website: https://fio.net\\n"

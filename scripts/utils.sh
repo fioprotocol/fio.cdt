@@ -78,15 +78,15 @@ function apply-clang-ubuntu22-patches() {
     apply-clang-ubuntu20-patches
 
     echo "Applying limits patch to fio.cdt eosio-llvm submodule for ubuntu 22..."
-    pushd eosio_llvm > /dev/null
+    pushd eosio_llvm
     $(git apply --check ../patches/fio.cdt_eosio-llvm_limits.patch &>/dev/null) && git apply ../patches/fio.cdt_eosio-llvm_limits.patch
-    popd > /dev/null
+    popd
 }
 
 function pushd () {
-    command pushd "$@" > /dev/null
+    command pushd "$@" &> /dev/null
 }
 
 function popd () {
-    command popd "$@" > /dev/null
+    command popd "$@" &> /dev/null
 }
