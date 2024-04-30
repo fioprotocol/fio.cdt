@@ -53,7 +53,7 @@ create_symlink() {
 }
 
 install_symlinks() {
-   printf "\\n\\tInstalling EOSIO.CDT Binary Symlinks\\n\\n"
+   printf "\\n\\tInstalling FIO.CDT Binary Symlinks\\n\\n"
    create_symlink "llvm-ranlib eosio-ranlib"
    create_symlink "llvm-ar eosio-ar"
    create_symlink "llvm-objdump eosio-objdump"
@@ -86,7 +86,7 @@ if ! pushd "${BUILD_DIR}"; then
 fi
 
 if ! make install; then
-   printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing EOSIO has exited with the above error.\\n\\n"
+   printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing FIO.cdt has exited with the above error.\\n\\n"
    exit -1
 fi
 popd &>/dev/null
@@ -94,17 +94,18 @@ popd &>/dev/null
 install_symlinks
 create_cmake_symlink "eosio.cdt-config.cmake"
 
-printf "\n${bldred}\t      ___           ___           ___                       ___\n"
-printf "\t     /  /\\         /  /\\         /  /\\        ___          /  /\\ \n"
-printf "\t    /  /:/_       /  /::\\       /  /:/_      /  /\\        /  /::\\ \n"
-printf "\t   /  /:/ /\\     /  /:/\\:\\     /  /:/ /\\    /  /:/       /  /:/\\:\\ \n"
-printf "\t  /  /:/ /:/_   /  /:/  \\:\\   /  /:/ /::\\  /__/::\\      /  /:/  \\:\\ \n"
-printf "\t /__/:/ /:/ /\\ /__/:/ \\__\\:\\ /__/:/ /:/\\:\\ \\__\\/\\:\\__  /__/:/ \\__\\:\\ \n"
-printf "\t \\  \\:\\/:/ /:/ \\  \\:\\ /  /:/ \\  \\:\\/:/~/:/    \\  \\:\\/\\ \\  \\:\\ /  /:/ \n"
-printf "\t  \\  \\::/ /:/   \\  \\:\\  /:/   \\  \\::/ /:/      \\__\\::/  \\  \\:\\  /:/ \n"
-printf "\t   \\  \\:\\/:/     \\  \\:\\/:/     \\__\\/ /:/       /__/:/    \\  \\:\\/:/ \n"
-printf "\t    \\  \\::/       \\  \\::/        /__/:/        \\__\\/      \\  \\::/ \n"
-printf "\t     \\__\\/         \\__\\/         \\__\\/                     \\__\\/ \n${txtrst}"
+printf "${bldred}\n"
+printf "      ___                       ___               \n"
+printf "     /\\__\\                     /\\  \\          \n"
+printf "    /:/ _/_      ___          /::\\  \\           \n"
+printf "   /:/ /\\__\\    /\\__\\        /:/\\:\\  \\     \n"
+printf "  /:/ /:/  /   /:/__/       /:/  \\:\\  \\        \n"
+printf " /:/_/:/  /   /::\\  \\      /:/__/ \\:\\__\\     \n"
+printf " \\:\\/:/  /    \\/\\:\\  \\__   \\:\\  \\ /:/  / \n"
+printf "  \\::/__/        \\:\\/\\__\\   \\:\\  /:/  /    \n"
+printf "   \\:\\  \\         \\::/  /    \\:\\/:/  /      \n"
+printf "    \\:\\__\\        /:/  /      \\::/  /         \n"
+printf "     \\/__/        \\/__/        \\/__/           \n"
 
 printf "\\tFor more information:\\n"
-printf "\\tEOSIO website: https://eos.io\\n"
+printf "\\tFIO website: https://fio.net\\n"
