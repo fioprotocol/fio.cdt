@@ -1,16 +1,18 @@
 #! /bin/bash
 
-binaries=(eosio-ranlib
-          eosio-ar
-          eosio-objdump
-          eosio-readelf
-          eosio-abigen
-          eosio-wasm2wast
-          eosio-wast2wasm
-          eosio-pp
-          eosio-cc
-          eosio-cpp
-          eosio-ld)
+binaries=(eosio-abidiff
+   eosio-abigen
+   eosio-ar
+   eosio-cc
+   eosio-cpp
+   eosio-init
+   eosio-ld
+   eosio-objdump
+   eosio-pp
+   eosio-ranlib
+   eosio-readelf
+   eosio-wasm2wast
+   eosio-wast2wasm)
 
 if [ -d "/usr/local/eosio.cdt" ]; then
    printf "\tDo you wish to remove this install? (requires sudo)\n"
