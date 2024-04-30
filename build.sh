@@ -105,7 +105,7 @@ if [[ "${unamestr}" == 'Linux' && "${OS_NAME}" == "Ubuntu" ]]; then
 fi
 
 mkdir -p build
-pushd build &>/dev/null
+pushd build
 
 "$CMAKE" -DCMAKE_INSTALL_PREFIX=/usr/local/eosio.cdt ../
 if [ $? -ne 0 ]; then
@@ -115,7 +115,7 @@ make -j${JOBS}
 if [ $? -ne 0 ]; then
    exit -1
 fi
-popd &>/dev/null
+popd
 
 printf "\n${bldred}\t      ___           ___           ___                       ___\n"
 printf "\t     /  /\\         /  /\\         /  /\\        ___          /  /\\ \n"

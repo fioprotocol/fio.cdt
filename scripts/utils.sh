@@ -82,3 +82,11 @@ function apply-clang-ubuntu22-patches() {
     $(git apply --check ../patches/fio.cdt_eosio-llvm_limits.patch &>/dev/null) && git apply ../patches/fio.cdt_eosio-llvm_limits.patch
     popd > /dev/null
 }
+
+function pushd () {
+    command pushd "$@" > /dev/null
+}
+
+function popd () {
+    command popd "$@" > /dev/null
+}
