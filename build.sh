@@ -1,6 +1,99 @@
 #!/usr/bin/env bash
+#set -x
 
-printf "\t=========== Building fio.cdt ===========\n"
+function usage() {
+   printf "Usage: $0 OPTION...
+  -f DIR      FIO Install Directory (FIO binary, dependencies). Default: $HOME/fio
+   \\n" "$0" 1>&2
+   exit 1
+}
+
+TIME_BEGIN=$(date -u +%s)
+if [ $# -ne 0 ]; then
+   while getopts "f:hv" opt; do
+      case "${opt}" in
+      f)
+         FIO_INSTALL_DIR=$OPTARG
+         ;;
+      h)
+         usage
+         ;;
+      v)
+         VERBOSE=true
+         ;;
+      ?)
+         echo "Invalid Option!" 1>&2
+         usage
+         ;;
+      :)
+         echo "Invalid Option: -${OPTARG} requires an argument." 1>&2
+         usage
+         ;;
+      *)
+         usage
+         ;;
+      esac
+   done
+fi
+
+SCRIPT_VERSION=1.5
+export CURRENT_WORKING_DIR=$(pwd) # relative path support
+
+# Obtain dependency versions; Must come first in the script
+. ./.environment
+
+# Load general helpers
+. ./utils.sh
+
+echo
+echo "FIO CDT Build Script Version: ${SCRIPT_VERSION}"
+echo "FIO CDT Version: ${FIO_CDT_VERSION_FULL}"
+echo "$(date -u)"
+echo "User: ${CURRENT_USER}"
+# echo "git head id: %s" "$( cat .git/refs/heads/master )"
+echo "Current branch: $(execute git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+
+# Checks for Arch and OS + Support for tests setting them manually
+## Necessary for linux exclusion while running bats tests/bash-bats/*.sh
+[[ -z "${ARCH}" ]] && export ARCH=$(uname)
+if [[ -z "${NAME}" ]]; then
+    if [[ $ARCH == "Linux" ]]; then
+        [[ ! -e /etc/os-release ]] && echo "${COLOR_RED} - /etc/os-release not found! It seems you're attempting to use an unsupported Linux distribution.${COLOR_NC}" && exit 1
+        # Obtain OS NAME, and VERSION
+        . /etc/os-release
+    elif [[ $ARCH == "Darwin" ]]; then
+        export NAME=$(sw_vers -productName)
+    else
+        echo " ${COLOR_RED}- FIO is not supported for your Architecture!${COLOR_NC}" && exit 1
+    fi
+    set-system-vars
+fi
+
+echo
+echo "Performing OS/System Validation..."
+([[ $NAME == "Ubuntu" ]] && ([[ "$(echo ${VERSION_ID})" == "18.04" ]] || [[ "$(echo ${VERSION_ID})" == "20.04" ]] || [[ "$(echo ${VERSION_ID})" == "22.04" ]])) || (echo " - You must be running 18.04.x or 20.04.x to install EOSIO." && exit 1)
+
+# Set up the working directories for build, etc
+setup
+
+# CMAKE Installation
+export CMAKE=
+([[ -z "${CMAKE}" ]] && [[ -d $FIO_INSTALL_DIR ]] && [[ -x $FIO_INSTALL_DIR/bin/cmake ]]) && export CMAKE=$FIO_INSTALL_DIR/bin/cmake
+([[ -z "${CMAKE}" ]] && [[ -d $FIO_CDT_APTS_DIR ]] && [[ -x $FIO_CDT_APTS_DIR/bin/cmake ]]) && export CMAKE=$FIO_CDT_APTS_DIR/bin/cmake
+if [[ $ARCH == "Darwin" ]]; then
+   ([[ -z "${CMAKE}" ]] && [[ ! -z $(command -v cmake 2>/dev/null) ]]) && export CMAKE=$(command -v cmake 2>/dev/null) && export CMAKE_CURRENT_VERSION=$($CMAKE --version | grep -E "cmake version[[:blank:]]*" | sed 's/.*cmake version //g')
+
+   # If it exists, check that it's > required version +
+   if [[ ! -z $CMAKE_CURRENT_VERSION ]] && [[ $((10#$(echo $CMAKE_CURRENT_VERSION | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'))) -lt $((10#$(echo $CMAKE_REQUIRED_VERSION | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'))) ]]; then
+      echo "${COLOR_RED}The currently installed cmake version ($CMAKE_CURRENT_VERSION) is less than the required version ($CMAKE_REQUIRED_VERSION). Cannot proceed."
+      exit 1
+   fi
+fi
+ensure-cmake
+
+echo
+
+printf "\t=========== Building FIO Contract Development Toolkit (CDT) ===========\n"
 
 RED='\033[0;31m'
 NC='\033[0m'
@@ -8,45 +101,13 @@ txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
 txtrst=$(tput sgr0)
 
-export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export REPO_ROOT="${SCRIPT_DIR}"
-export BUILD_DIR="${REPO_ROOT}/build"
-
-export DISK_MIN=5
-export TEMP_DIR="/tmp"
-TEMP_DIR='/tmp'
-DISK_MIN=5
-
-# Use current directory's tmp directory if noexec is enabled for /tmp
-if (mount | grep "/tmp " | grep --quiet noexec); then
-   mkdir -p $SOURCE_DIR/tmp
-   TEMP_DIR="${SOURCE_DIR}/tmp"
-   rm -rf $SOURCE_DIR/tmp/*
-fi
-
-. ./.build_vars
-. ./scripts/utils.sh
-
-# Set OS and associated system vars
-set-system-vars
-
-# CMAKE Installation
-if [ -z "$CMAKE" ]; then
-   CMAKE=$(command -v cmake)
-fi
-if [[ $ARCH == "Linux" ]]; then
-   export CMAKE=${CMAKE:-${EOSIO_INSTALL_DIR}/bin/cmake}
-   ensure-cmake
-fi
-
-unamestr=$(uname)
-if [[ "${unamestr}" == 'Darwin' ]]; then
+if [[ "$ARCH" == "Darwin" ]]; then
    BOOST=/usr/local
    CXX_COMPILER=g++
    export ARCH="Darwin"
    bash ./scripts/eosio_build_darwin.sh
 else
-   case "$OS_NAME" in
+   case "$NAME" in
    "Amazon Linux AMI")
       export ARCH="Amazon Linux AMI"
       bash ./scripts/eosio_build_amazon.sh
@@ -95,7 +156,7 @@ fi
 
 # Apply patches for ubuntu 20+
 echo
-if [[ "${unamestr}" == 'Linux' && "${OS_NAME}" == "Ubuntu" ]]; then
+if [[ "${ARCH}" == 'Linux' && "${NAME}" == "Ubuntu" ]]; then
    if [[ "${OS_MAJ}" == "20" ]]; then
       apply-clang-ubuntu20-patches
    fi
@@ -107,7 +168,7 @@ fi
 mkdir -p build
 pushd build
 
-"$CMAKE" -DCMAKE_INSTALL_PREFIX=/usr/local/eosio.cdt ../
+"${CMAKE}" -DCMAKE_INSTALL_PREFIX=/usr/local/eosio.cdt ../
 if [ $? -ne 0 ]; then
    exit -1
 fi
@@ -117,6 +178,9 @@ if [ $? -ne 0 ]; then
 fi
 popd
 
+echo
+printf "\t=========== FIO CDT Build Complete ===========\n\n"
+echo
 printf "${bldred}\n"
 printf "      ___                       ___               \n"
 printf "     /\\__\\                     /\\  \\          \n"
@@ -132,3 +196,4 @@ printf "     \\/__/        \\/__/        \\/__/           \n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
 printf "\\tFIO website: https://fio.net\\n"
+echo
