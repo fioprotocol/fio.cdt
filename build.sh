@@ -109,35 +109,28 @@ if [[ "$ARCH" == "Darwin" ]]; then
 else
    case "$NAME" in
    "Amazon Linux AMI")
-      export ARCH="Amazon Linux AMI"
       bash ./scripts/eosio_build_amazon.sh
       ;;
    "CentOS Linux")
-      export ARCH="Centos"
       export CMAKE=${HOME}/opt/cmake/bin/cmake
       bash ./scripts/eosio_build_centos.sh
       ;;
    "elementary OS")
-      export ARCH="elementary OS"
       bash ./scripts/eosio_build_ubuntu.sh
       ;;
    "Fedora")
-      export ARCH="Fedora"
       bash ./scripts/eosio_build_fedora.sh
       ;;
    "Linux Mint")
-      export ARCH="Linux Mint"
       bash ./scripts/eosio_build_ubuntu.sh
       ;;
    "Ubuntu")
-      export ARCH="Ubuntu"
       bash ./scripts/eosio_build_ubuntu.sh
       if [[ $? -ne 0 ]]; then
          exit 1
       fi
       ;;
    "Debian GNU/Linux")
-      export ARCH="Debian"
       bash ./scripts/eosio_build_ubuntu.sh
       ;;
    *)
@@ -157,10 +150,10 @@ fi
 # Apply patches for ubuntu 20+
 echo
 if [[ "${ARCH}" == 'Linux' && "${NAME}" == "Ubuntu" ]]; then
-   if [[ "${OS_MAJ}" == "20" ]]; then
+   if [[ "${VERSION_ID}" == "20.04" ]]; then
       apply-clang-ubuntu20-patches
    fi
-   if [[ "${OS_MAJ}" == "22" ]]; then
+   if [[ "${VERSION_ID}" == "22.04" ]]; then
       apply-clang-ubuntu22-patches
    fi
 fi
