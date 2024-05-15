@@ -92,6 +92,7 @@ function ensure-cmake() {
             build-cmake
         fi
         install-cmake
+        export CMAKE_LOCATION=${CMAKE_INSTALL_DIR}
         export CMAKE="${CMAKE_INSTALL_DIR}/bin/cmake"
         echo " - CMAKE successfully installed @ ${CMAKE}"
         echo ""
