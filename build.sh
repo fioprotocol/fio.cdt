@@ -3,17 +3,17 @@
 
 function usage() {
    printf "Usage: $0 OPTION...
-  -f DIR      FIO Install Directory (FIO binary, dependencies). Default: $HOME/fio
+  -c DIR      Directory where cmake install is located
    \\n" "$0" 1>&2
    exit 1
 }
 
 TIME_BEGIN=$(date -u +%s)
 if [ $# -ne 0 ]; then
-   while getopts "i:hv" opt; do
+   while getopts "c:hv" opt; do
       case "${opt}" in
-      i)
-         INSTALL_DIR=$OPTARG
+      c)
+         CMAKE_LOCATION=$OPTARG
          ;;
       v)
          VERBOSE=true
@@ -78,8 +78,8 @@ setup
 
 # CMAKE Installation
 export CMAKE=
-([[ -z "${CMAKE}" ]] && [[ -d ${INSTALL_DIR} ]] && [[ -x ${INSTALL_DIR}/bin/cmake ]]) && export CMAKE=${INSTALL_DIR}/bin/cmake && export CMAKE_INSTALL_DIR=${INSTALL_DIR}
-([[ -z "${CMAKE}" ]] && [[ -d ${FIO_CDT_APTS_DIR} ]] && [[ -x ${FIO_CDT_APTS_DIR}/bin/cmake ]]) && export CMAKE=${FIO_CDT_APTS_DIR}/bin/cmake && export CMAKE_INSTALL_DIR=${FIO_CDT_APTS_DIR}
+([[ -z "${CMAKE}" ]] && [[ -d ${CMAKE_LOCATION} ]] && [[ -x ${CMAKE_LOCATION}/bin/cmake ]]) && export CMAKE=${CMAKE_LOCATION}/bin/cmake
+([[ -z "${CMAKE}" ]] && [[ -d ${FIO_CDT_APTS_DIR} ]] && [[ -x ${FIO_CDT_APTS_DIR}/bin/cmake ]]) && export CMAKE=${FIO_CDT_APTS_DIR}/bin/cmake && export CMAKE_LOCATION=${FIO_CDT_APTS_DIR}
 if [[ $ARCH == "Darwin" ]]; then
    ([[ -z "${CMAKE}" ]] && [[ ! -z $(command -v cmake 2>/dev/null) ]]) && export CMAKE=$(command -v cmake 2>/dev/null) && export CMAKE_CURRENT_VERSION=$($CMAKE --version | grep -E "cmake version[[:blank:]]*" | sed 's/.*cmake version //g')
 
