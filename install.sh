@@ -39,18 +39,22 @@ fi
 BUILD_DIR="${PWD}/build"
 CMAKE_BUILD_TYPE=Release
 TIME_BEGIN=$(date -u +%s)
-INSTALL_PREFIX="/usr/local/eosio.cdt"
 VERSION=1.2
 
 txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
 txtrst=$(tput sgr0)
 
+# Obtain dependency versions; Must come first in the script
+. ./.environment
+
+# Load general helpers
 . ./utils.sh
 
 create_symlink() {
    pushd /usr/local/bin
-   ln -sf ../eosio.cdt/bin/$1 $2
+   pushd ${FIO_CDT_INSTALL_DIR}/bin
+   ln -sf ${FIO_CDT_INSTALL_DIR}/eosio.cdt/bin/$1 $2
    popd
 }
 
@@ -72,9 +76,9 @@ install_symlinks() {
 }
 
 create_cmake_symlink() {
-   mkdir -p /usr/local/lib/cmake/eosio.cdt
-   pushd /usr/local/lib/cmake/eosio.cdt
-   ln -sf ../../../eosio.cdt/lib/cmake/eosio.cdt/$1 $1
+   mkdir -p ${FIO_CDT_INSTALL_DIR}/lib/cmake/eosio.cdt
+   pushd ${FIO_CDT_INSTALL_DIR}/lib/cmake/eosio.cdt
+   ln -sf ${FIO_CDT_INSTALL_DIR}/eosio.cdt/lib/cmake/eosio.cdt/$1 $1
    popd
 }
 if [ ! -d "${BUILD_DIR}" ]; then

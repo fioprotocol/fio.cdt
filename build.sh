@@ -161,7 +161,7 @@ fi
 mkdir -p build
 pushd build
 
-"${CMAKE}" -DCMAKE_INSTALL_PREFIX=${FIO_CDT_INSTALL_DIR} ../
+"${CMAKE}" -DCMAKE_INSTALL_PREFIX=${FIO_CDT_INSTALL_DIR}/eosio.cdt ../
 if [ $? -ne 0 ]; then
    exit -1
 fi
