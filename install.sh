@@ -46,7 +46,7 @@ txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
 txtrst=$(tput sgr0)
 
-. ./scripts/utils.sh
+. ./utils.sh
 
 create_symlink() {
    pushd /usr/local/bin

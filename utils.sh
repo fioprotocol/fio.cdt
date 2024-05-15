@@ -37,16 +37,16 @@ function setup() {
     if $VERBOSE; then
         echo "VERBOSE: ${VERBOSE}"
         echo "TEMP_DIR: ${TEMP_DIR}"
-        echo "FIO_CDT_TMP_DIR: $FIO_CDT_TMP_DIR"
-        echo "FIO_CDT_APTS_DIR: $FIO_CDT_APTS_DIR"
+        echo "FIO_CDT_TMP_DIR: ${FIO_CDT_TMP_DIR}"
+        echo "FIO_CDT_APTS_DIR: ${FIO_CDT_APTS_DIR}"
     fi
-    ([[ -d $BUILD_DIR ]]) && execute rm -rf $BUILD_DIR # cleanup old build directory
+    ([[ -d ${BUILD_DIR} ]]) && execute rm -rf ${BUILD_DIR} # cleanup old build directory
     ensure-temp
     
-    execute mkdir -p $BUILD_DIR
+    execute mkdir -p ${BUILD_DIR}
     execute-always mkdir -p ${TEMP_DIR}
-    execute-always mkdir -p $FIO_CDT_TMP_DIR
-    execute mkdir -p $FIO_CDT_APTS_DIR
+    execute-always mkdir -p ${FIO_CDT_TMP_DIR}
+    execute mkdir -p ${FIO_CDT_APTS_DIR}
 }
 
 function set-system-vars() {
@@ -87,12 +87,12 @@ function ensure-temp() {
 function ensure-cmake() {
     echo
     echo "${COLOR_CYAN}[Ensuring CMAKE installation]${COLOR_NC}"
-    if [[ ! -e "${CMAKE}" ]]; then
+    if [[ ! -x "${CMAKE}" ]]; then
         if ! is-cmake-built; then
             build-cmake
         fi
         install-cmake
-        [[ -z "${CMAKE}" ]] && export CMAKE="${CMAKE_INSTALL_DIR}/bin/cmake"
+        export CMAKE="${CMAKE_INSTALL_DIR}/bin/cmake"
         echo " - CMAKE successfully installed @ ${CMAKE}"
         echo ""
     else

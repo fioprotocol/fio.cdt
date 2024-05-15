@@ -10,16 +10,16 @@ function usage() {
 
 TIME_BEGIN=$(date -u +%s)
 if [ $# -ne 0 ]; then
-   while getopts "f:hv" opt; do
+   while getopts "i:hv" opt; do
       case "${opt}" in
-      f)
-         FIO_INSTALL_DIR=$OPTARG
-         ;;
-      h)
-         usage
+      i)
+         INSTALL_DIR=$OPTARG
          ;;
       v)
          VERBOSE=true
+         ;;
+      h)
+         usage
          ;;
       ?)
          echo "Invalid Option!" 1>&2
@@ -78,8 +78,8 @@ setup
 
 # CMAKE Installation
 export CMAKE=
-([[ -z "${CMAKE}" ]] && [[ -d $FIO_INSTALL_DIR ]] && [[ -x $FIO_INSTALL_DIR/bin/cmake ]]) && export CMAKE=$FIO_INSTALL_DIR/bin/cmake
-([[ -z "${CMAKE}" ]] && [[ -d $FIO_CDT_APTS_DIR ]] && [[ -x $FIO_CDT_APTS_DIR/bin/cmake ]]) && export CMAKE=$FIO_CDT_APTS_DIR/bin/cmake
+([[ -z "${CMAKE}" ]] && [[ -d ${INSTALL_DIR} ]] && [[ -x ${INSTALL_DIR}/bin/cmake ]]) && export CMAKE=${INSTALL_DIR}/bin/cmake && export CMAKE_INSTALL_DIR=${INSTALL_DIR}
+([[ -z "${CMAKE}" ]] && [[ -d ${FIO_CDT_APTS_DIR} ]] && [[ -x ${FIO_CDT_APTS_DIR}/bin/cmake ]]) && export CMAKE=${FIO_CDT_APTS_DIR}/bin/cmake && export CMAKE_INSTALL_DIR=${FIO_CDT_APTS_DIR}
 if [[ $ARCH == "Darwin" ]]; then
    ([[ -z "${CMAKE}" ]] && [[ ! -z $(command -v cmake 2>/dev/null) ]]) && export CMAKE=$(command -v cmake 2>/dev/null) && export CMAKE_CURRENT_VERSION=$($CMAKE --version | grep -E "cmake version[[:blank:]]*" | sed 's/.*cmake version //g')
 
@@ -161,7 +161,7 @@ fi
 mkdir -p build
 pushd build
 
-"${CMAKE}" -DCMAKE_INSTALL_PREFIX=/usr/local/eosio.cdt ../
+"${CMAKE}" -DCMAKE_INSTALL_PREFIX=${FIO_CDT_INSTALL_DIR} ../
 if [ $? -ne 0 ]; then
    exit -1
 fi
