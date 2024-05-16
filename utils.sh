@@ -97,7 +97,7 @@ function ensure-cmake() {
         echo " - CMAKE successfully installed @ ${CMAKE}"
         echo ""
     else
-        echo " - CMAKE found @ ${CMAKE}."
+        echo " - CMAKE found @ ${CMAKE}"
         echo ""
     fi
 }
