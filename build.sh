@@ -10,7 +10,7 @@ function usage() {
 TIME_BEGIN=$(date -u +%s)
 DEBUG=${DEBUG:-false}
 if [ $# -ne 0 ]; then
-   while getopts "c:hv" opt; do
+   while getopts "c:dhv" opt; do
       case "${opt}" in
       c)
          CMAKE_LOCATION=$OPTARG
