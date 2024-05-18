@@ -39,7 +39,7 @@ fi
 BUILD_DIR="${PWD}/build"
 CMAKE_BUILD_TYPE=Release
 TIME_BEGIN=$(date -u +%s)
-VERSION=1.2
+SCRIPT_VERSION=1.2
 
 txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
