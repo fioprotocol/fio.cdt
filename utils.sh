@@ -37,7 +37,6 @@ function setup() {
     if $VERBOSE; then
         echo "VERBOSE: ${VERBOSE}"
         echo "TEMP_DIR: ${TEMP_DIR}"
-        echo "FIO_CDT_TMP_DIR: ${FIO_CDT_TMP_DIR}"
         echo "FIO_CDT_APTS_DIR: ${FIO_CDT_APTS_DIR}"
     fi
     ([[ -d ${BUILD_DIR} ]]) && execute rm -rf ${BUILD_DIR} # cleanup old build directory
@@ -45,7 +44,6 @@ function setup() {
     
     execute mkdir -p ${BUILD_DIR}
     execute-always mkdir -p ${TEMP_DIR}
-    execute-always mkdir -p ${FIO_CDT_TMP_DIR}
     execute mkdir -p ${FIO_CDT_APTS_DIR}
 }
 
@@ -104,10 +102,10 @@ function ensure-cmake() {
 
 # CMake may be built but is it configured for the same install directory??? applies to other repos as well
 function is-cmake-built() {
-    if [[ -x ${FIO_CDT_TMP_DIR}/cmake-${CMAKE_VERSION}/build/bin/cmake ]]; then
-        cmake_version=$(${FIO_CDT_TMP_DIR}/cmake-${CMAKE_VERSION}/build/bin/cmake --version | grep version | awk '{print $3}')
+    if [[ -x ${TEMP_DIR}/cmake-${CMAKE_VERSION}/build/bin/cmake ]]; then
+        cmake_version=$(${TEMP_DIR}/cmake-${CMAKE_VERSION}/build/bin/cmake --version | grep version | awk '{print $3}')
         if [[ $cmake_version =~ 3.2 ]]; then
-            #cat ${FIO_CDT_TMP_DIR}/cmake-${CMAKE_VERSION}/build/CMakeCache.txt | grep CMAKE_INSTALL_PREFIX | grep ${EOSIO_INSTALL_DIR} >/dev/null
+            #cat ${TEMP_DIR}/cmake-${CMAKE_VERSION}/build/CMakeCache.txt | grep CMAKE_INSTALL_PREFIX | grep ${EOSIO_INSTALL_DIR} >/dev/null
             #if [[ $? -eq 0 ]]; then
             #    return
             #fi
@@ -119,7 +117,7 @@ function is-cmake-built() {
 
 function build-cmake() {
     echo "Building cmake..."
-    execute bash -c "cd $FIO_CDT_TMP_DIR \
+    execute bash -c "cd $TEMP_DIR \
         && rm -rf cmake-${CMAKE_VERSION} \
         && curl -LO https://cmake.org/files/v${CMAKE_VERSION_MAJOR}.${CMAKE_VERSION_MINOR}/cmake-${CMAKE_VERSION}.tar.gz \
         && tar -xzf cmake-${CMAKE_VERSION}.tar.gz \
@@ -132,7 +130,7 @@ function build-cmake() {
 
 function install-cmake() {
     echo "Installing cmake..."
-    execute bash -c "cd $FIO_CDT_TMP_DIR/cmake-${CMAKE_VERSION} \
+    execute bash -c "cd $TEMP_DIR/cmake-${CMAKE_VERSION} \
         && cd build \
         && make install"
 }
