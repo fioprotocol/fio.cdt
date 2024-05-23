@@ -1,6 +1,104 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
-printf "\t=========== Building eosio.cdt ===========\n\n"
+function usage() {
+   printf "Usage: $0 OPTION...
+  -c DIR      Directory where cmake install is located
+   \\n" "$0" 1>&2
+   exit 1
+}
+
+TIME_BEGIN=$(date -u +%s)
+DEBUG=${DEBUG:-false}
+if [ $# -ne 0 ]; then
+   while getopts "c:dhv" opt; do
+      case "${opt}" in
+      c)
+         CMAKE_LOCATION=$OPTARG
+         ;;
+      d)
+         DEBUG=true
+         set -x
+         ;;
+      v)
+         VERBOSE=true
+         ;;
+      h)
+         usage
+         ;;
+      ?)
+         echo "Invalid Option!" 1>&2
+         usage
+         ;;
+      :)
+         echo "Invalid Option: -${OPTARG} requires an argument." 1>&2
+         usage
+         ;;
+      *)
+         usage
+         ;;
+      esac
+   done
+fi
+
+SCRIPT_VERSION=1.5
+export CURRENT_WORKING_DIR=$(pwd) # relative path support
+
+# Obtain dependency versions; Must come first in the script
+. ./.environment
+
+# Load general helpers
+. ./utils.sh
+
+echo
+echo "FIO CDT Build Script Version: ${SCRIPT_VERSION}"
+echo "FIO CDT Version: ${FIO_CDT_VERSION_FULL}"
+echo "$(date -u)"
+echo "User: ${CURRENT_USER}"
+# echo "git head id: %s" "$( cat .git/refs/heads/master )"
+echo "Current branch: $(execute git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+
+# Checks for Arch and OS + Support for tests setting them manually
+## Necessary for linux exclusion while running bats tests/bash-bats/*.sh
+[[ -z "${ARCH}" ]] && export ARCH=$(uname)
+if [[ -z "${NAME}" ]]; then
+    if [[ $ARCH == "Linux" ]]; then
+        [[ ! -e /etc/os-release ]] && echo "${COLOR_RED} - /etc/os-release not found! It seems you're attempting to use an unsupported Linux distribution.${COLOR_NC}" && exit 1
+        # Obtain OS NAME, and VERSION
+        . /etc/os-release
+    elif [[ $ARCH == "Darwin" ]]; then
+        export NAME=$(sw_vers -productName)
+    else
+        echo " ${COLOR_RED}- FIO is not supported for your Architecture!${COLOR_NC}" && exit 1
+    fi
+    set-system-vars
+fi
+
+echo
+echo "Performing OS/System Validation..."
+([[ $NAME == "Ubuntu" ]] && ([[ "$(echo ${VERSION_ID})" == "18.04" ]] || [[ "$(echo ${VERSION_ID})" == "20.04" ]] || [[ "$(echo ${VERSION_ID})" == "22.04" ]])) || (echo " - You must be running 18.04.x or 20.04.x to install EOSIO." && exit 1)
+
+# Set up the working directories for build, etc
+setup
+
+# CMAKE Installation
+# cmake may have been passed as arg to build or previously installed in local apts dir, check these and set if appropriate
+export CMAKE=
+([[ -z "${CMAKE}" ]] && [[ -d ${CMAKE_LOCATION} ]] && [[ -x ${CMAKE_LOCATION}/bin/cmake ]]) && export CMAKE=${CMAKE_LOCATION}/bin/cmake
+([[ -z "${CMAKE}" ]] && [[ -d ${FIO_CDT_APTS_DIR} ]] && [[ -x ${FIO_CDT_APTS_DIR}/bin/cmake ]]) && export CMAKE=${FIO_CDT_APTS_DIR}/bin/cmake && export CMAKE_LOCATION=${FIO_CDT_APTS_DIR}
+if [[ $ARCH == "Darwin" ]]; then
+   ([[ -z "${CMAKE}" ]] && [[ ! -z $(command -v cmake 2>/dev/null) ]]) && export CMAKE=$(command -v cmake 2>/dev/null) && export CMAKE_CURRENT_VERSION=$($CMAKE --version | grep -E "cmake version[[:blank:]]*" | sed 's/.*cmake version //g')
+
+   # If it exists, check that it's > required version +
+   if [[ ! -z $CMAKE_CURRENT_VERSION ]] && [[ $((10#$(echo $CMAKE_CURRENT_VERSION | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'))) -lt $((10#$(echo $CMAKE_REQUIRED_VERSION | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'))) ]]; then
+      echo "${COLOR_RED}The currently installed cmake version ($CMAKE_CURRENT_VERSION) is less than the required version ($CMAKE_REQUIRED_VERSION). Cannot proceed."
+      exit 1
+   fi
+fi
+ensure-cmake
+
+echo
+
+printf "\t=========== Building FIO Contract Development Toolkit (CDT) ===========\n"
 
 RED='\033[0;31m'
 NC='\033[0m'
@@ -8,102 +106,92 @@ txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
 txtrst=$(tput sgr0)
 
-export DISK_MIN=10
-export TEMP_DIR="/tmp"
-TEMP_DIR='/tmp'
-DISK_MIN=10
-
-# Use current directory's tmp directory if noexec is enabled for /tmp
-if (mount | grep "/tmp " | grep --quiet noexec); then
-  mkdir -p $SOURCE_DIR/tmp
-  TEMP_DIR="${SOURCE_DIR}/tmp"
-  rm -rf $SOURCE_DIR/tmp/*
-else # noexec wasn't found
-  TEMP_DIR="/tmp"
-fi
-
-unamestr=`uname`
-if [[ "${unamestr}" == 'Darwin' ]]; then
+if [[ "$ARCH" == "Darwin" ]]; then
    BOOST=/usr/local
    CXX_COMPILER=g++
    export ARCH="Darwin"
    bash ./scripts/eosio_build_darwin.sh
 else
-   OS_NAME=$( cat /etc/os-release | grep ^NAME | cut -d'=' -f2 | sed 's/\"//gI' )
-
-   case "$OS_NAME" in
-      "Amazon Linux AMI")
-         export ARCH="Amazon Linux AMI"
-         bash ./scripts/eosio_build_amazon.sh
-         ;;
-      "CentOS Linux")
-         export ARCH="Centos"
-         export CMAKE=${HOME}/opt/cmake/bin/cmake
-         bash ./scripts/eosio_build_centos.sh
-         ;;
-      "elementary OS")
-         export ARCH="elementary OS"
-         bash ./scripts/eosio_build_ubuntu.sh
-         ;;
-      "Fedora")
-         export ARCH="Fedora"
-         bash ./scripts/eosio_build_fedora.sh
-         ;;
-      "Linux Mint")
-         export ARCH="Linux Mint"
-         bash ./scripts/eosio_build_ubuntu.sh
-         ;;
-      "Ubuntu")
-         export ARCH="Ubuntu"
-         bash ./scripts/eosio_build_ubuntu.sh
-         ;;
-      "Debian GNU/Linux")
-         export ARCH="Debian"
-	 bash ./scripts/eosio_build_ubuntu.sh
-	 ;;
-      *)
-         printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
+   case "$NAME" in
+   "Amazon Linux AMI")
+      bash ./scripts/eosio_build_amazon.sh
+      ;;
+   "CentOS Linux")
+      export CMAKE=${HOME}/opt/cmake/bin/cmake
+      bash ./scripts/eosio_build_centos.sh
+      ;;
+   "elementary OS")
+      bash ./scripts/eosio_build_ubuntu.sh
+      ;;
+   "Fedora")
+      bash ./scripts/eosio_build_fedora.sh
+      ;;
+   "Linux Mint")
+      bash ./scripts/eosio_build_ubuntu.sh
+      ;;
+   "Ubuntu")
+      bash ./scripts/eosio_build_ubuntu.sh
+      if [[ $? -ne 0 ]]; then
          exit 1
+      fi
+      ;;
+   "Debian GNU/Linux")
+      bash ./scripts/eosio_build_ubuntu.sh
+      ;;
+   *)
+      printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
+      exit 1
+      ;;
    esac
 fi
 
-CORES=`getconf _NPROCESSORS_ONLN`
-
 #check submodules
-if [ $(( $(git submodule status --recursive | grep -c "^[+\-]") )) -gt 0 ]; then
+if [ $(($(git submodule status --recursive | grep -c "^[+\-]"))) -gt 0 ]; then
    printf "\\n\\tgit submodules are not up to date.\\n"
    printf "\\tPlease run the command 'git submodule update --init --recursive'.\\n"
    exit 1
 fi
 
+# Apply patches for ubuntu 20+
+echo
+if [[ "${ARCH}" == 'Linux' && "${NAME}" == "Ubuntu" ]]; then
+   if [[ "${VERSION_ID}" == "20.04" ]]; then
+      apply-clang-ubuntu20-patches
+   fi
+   if [[ "${VERSION_ID}" == "22.04" ]]; then
+      apply-clang-ubuntu22-patches
+   fi
+fi
+
 mkdir -p build
-pushd build &> /dev/null
+pushd build
 
-if [ -z "$CMAKE" ]; then
-  CMAKE=$( command -v cmake )
-fi
-
-"$CMAKE" -DCMAKE_INSTALL_PREFIX=/usr/local/eosio.cdt ../
+"${CMAKE}" -DCMAKE_INSTALL_PREFIX=${FIO_CDT_INSTALL_DIR}/eosio.cdt ../
 if [ $? -ne 0 ]; then
-   exit -1;
+   exit -1
 fi
-make -j${CORES}
+make -j${JOBS}
 if [ $? -ne 0 ]; then
-   exit -1;
+   exit -1
 fi
-popd &> /dev/null
+popd
 
-printf "\n${bldred}\t      ___           ___           ___                       ___\n"
-printf "\t     /  /\\         /  /\\         /  /\\        ___          /  /\\ \n"
-printf "\t    /  /:/_       /  /::\\       /  /:/_      /  /\\        /  /::\\ \n"
-printf "\t   /  /:/ /\\     /  /:/\\:\\     /  /:/ /\\    /  /:/       /  /:/\\:\\ \n"
-printf "\t  /  /:/ /:/_   /  /:/  \\:\\   /  /:/ /::\\  /__/::\\      /  /:/  \\:\\ \n"
-printf "\t /__/:/ /:/ /\\ /__/:/ \\__\\:\\ /__/:/ /:/\\:\\ \\__\\/\\:\\__  /__/:/ \\__\\:\\ \n"
-printf "\t \\  \\:\\/:/ /:/ \\  \\:\\ /  /:/ \\  \\:\\/:/~/:/    \\  \\:\\/\\ \\  \\:\\ /  /:/ \n"
-printf "\t  \\  \\::/ /:/   \\  \\:\\  /:/   \\  \\::/ /:/      \\__\\::/  \\  \\:\\  /:/ \n"
-printf "\t   \\  \\:\\/:/     \\  \\:\\/:/     \\__\\/ /:/       /__/:/    \\  \\:\\/:/ \n"
-printf "\t    \\  \\::/       \\  \\::/        /__/:/        \\__\\/      \\  \\::/ \n"
-printf "\t     \\__\\/         \\__\\/         \\__\\/                     \\__\\/ \n${txtrst}"
+echo
+printf "\t=========== FIO CDT Build Complete ===========\n\n"
+echo
+printf "${bldred}\n"
+printf "      ___                       ___               \n"
+printf "     /\\__\\                     /\\  \\          \n"
+printf "    /:/ _/_      ___          /::\\  \\           \n"
+printf "   /:/ /\\__\\    /\\__\\        /:/\\:\\  \\     \n"
+printf "  /:/ /:/  /   /:/__/       /:/  \\:\\  \\        \n"
+printf " /:/_/:/  /   /::\\  \\      /:/__/ \\:\\__\\     \n"
+printf " \\:\\/:/  /    \\/\\:\\  \\__   \\:\\  \\ /:/  / \n"
+printf "  \\::/__/        \\:\\/\\__\\   \\:\\  /:/  /    \n"
+printf "   \\:\\  \\         \\::/  /    \\:\\/:/  /      \n"
+printf "    \\:\\__\\        /:/  /      \\::/  /         \n"
+printf "     \\/__/        \\/__/        \\/__/           \n\n${txtrst}"
 
 printf "\\tFor more information:\\n"
-printf "\\tEOSIO website: https://eos.io\\n"
+printf "\\tFIO website: https://fio.net\\n"
+echo
