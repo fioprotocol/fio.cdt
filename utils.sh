@@ -82,6 +82,7 @@ function ensure-temp() {
     fi
 }
 
+# Check cmake env var definition, otherwise, build if necessary, install and set env
 function ensure-cmake() {
     echo
     echo "${COLOR_CYAN}[Ensuring CMAKE installation]${COLOR_NC}"
@@ -100,7 +101,7 @@ function ensure-cmake() {
     fi
 }
 
-# CMake may be built but is it configured for the same install directory??? applies to other repos as well
+# Check previous build of cmake, incl version
 function is-cmake-built() {
     if [[ -x ${TEMP_DIR}/cmake-${CMAKE_VERSION}/build/bin/cmake ]]; then
         cmake_version=$(${TEMP_DIR}/cmake-${CMAKE_VERSION}/build/bin/cmake --version | grep version | awk '{print $3}')
@@ -111,6 +112,7 @@ function is-cmake-built() {
     false
 }
 
+# Download and build cmake
 function build-cmake() {
     echo "Building cmake..."
     execute bash -c "cd $TEMP_DIR \
