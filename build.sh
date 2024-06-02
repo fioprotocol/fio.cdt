@@ -7,13 +7,15 @@ function usage() {
    exit 1
 }
 
-TIME_BEGIN=$(date -u +%s)
 DEBUG=${DEBUG:-false}
+VERBOSE=${VERBOSE:-false}
+
+TIME_BEGIN=$(date -u +%s)
 if [ $# -ne 0 ]; then
-   while getopts "c:dhv" opt; do
+   while getopts "a:dhv" opt; do
       case "${opt}" in
-      c)
-         CMAKE_LOCATION=$OPTARG
+      a)
+         APTS_DIR=$OPTARG
          ;;
       d)
          DEBUG=true
@@ -41,7 +43,11 @@ if [ $# -ne 0 ]; then
 fi
 
 SCRIPT_VERSION=1.5
+
 export CURRENT_WORKING_DIR=$(pwd) # relative path support
+
+export DEBUG
+export VERBOSE
 
 # Obtain dependency versions; Must come first in the script
 . ./.environment
@@ -83,8 +89,8 @@ setup
 # CMAKE Installation
 # cmake may have been passed as arg to build or previously installed in local apts dir, check these and set if appropriate
 export CMAKE=
-([[ -z "${CMAKE}" ]] && [[ -d ${CMAKE_LOCATION} ]] && [[ -x ${CMAKE_LOCATION}/bin/cmake ]]) && export CMAKE=${CMAKE_LOCATION}/bin/cmake
-([[ -z "${CMAKE}" ]] && [[ -d ${FIO_CDT_APTS_DIR} ]] && [[ -x ${FIO_CDT_APTS_DIR}/bin/cmake ]]) && export CMAKE=${FIO_CDT_APTS_DIR}/bin/cmake && export CMAKE_LOCATION=${FIO_CDT_APTS_DIR}
+([[ -z "${CMAKE}" ]] && [[ -d ${APTS_DIR} ]] && [[ -x ${APTS_DIR}/bin/cmake ]]) && export CMAKE=${APTS_DIR}/bin/cmake
+([[ -z "${CMAKE}" ]] && [[ -d ${FIO_CDT_APTS_DIR} ]] && [[ -x ${FIO_CDT_APTS_DIR}/bin/cmake ]]) && export CMAKE=${FIO_CDT_APTS_DIR}/bin/cmake && export APTS_DIR=${FIO_CDT_APTS_DIR}
 if [[ $ARCH == "Darwin" ]]; then
    ([[ -z "${CMAKE}" ]] && [[ ! -z $(command -v cmake 2>/dev/null) ]]) && export CMAKE=$(command -v cmake 2>/dev/null) && export CMAKE_CURRENT_VERSION=$($CMAKE --version | grep -E "cmake version[[:blank:]]*" | sed 's/.*cmake version //g')
 
