@@ -31,8 +31,8 @@
 		exit 1
 	fi
 
-	if [ "${OS_MIN}" -lt 12 ]; then
-		echo "You must be running Mac OS 10.12.x or higher to install EOSIO."
+	if [[ "${OS_MAJ}" -lt 10 || ("${OS_MAJ}" -eq 10 && "${OS_MIN}" -lt 12) || ("${OS_MAJ}" -gt 11 && "${OS_MAJ}" -lt 14) ]]; then
+		echo "You must be running Mac OS 10.12.x, 11.x or 14.x to install EOSIO."
 		echo "Exiting now."
 		exit 1
 	fi
