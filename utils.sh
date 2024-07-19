@@ -91,7 +91,6 @@ function ensure-cmake() {
             build-cmake
         fi
         install-cmake
-        export APTS_DIR=${CMAKE_INSTALL_DIR}
         export CMAKE="${CMAKE_INSTALL_DIR}/bin/cmake"
         echo " - CMAKE successfully installed @ ${CMAKE}"
         echo ""
