@@ -86,6 +86,9 @@ echo "Performing OS/System Validation..."
 # Set up the working directories for build, etc
 setup
 
+# OpenSSL Installation
+ensure-openssl
+
 # CMAKE Installation
 # cmake may have been passed as arg to build or previously installed in local apts dir, check these and set if appropriate
 export CMAKE=
