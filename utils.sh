@@ -87,7 +87,7 @@ OPENSSL_TAG_NAME=OpenSSL_1_1_1w
 OPENSSL_ROOT=/usr/local/ssl
 # Check openssl root (install dir) for openssl, otherwise, download, build and install
 function ensure-openssl() {
-    if $BUILD_OPENSSL; then
+    if $DO_OPENSSL; then
         echo "${COLOR_CYAN}[Ensuring OpenSSL support]${COLOR_NC}"
         if ! is-openssl-installed; then
             # Check tmp dir for previous openssl build
