@@ -82,9 +82,9 @@ function ensure-temp() {
     fi
 }
 
-OPENSSL_ROOT=/opt/openssl
 OPENSSL_NAME=openssl-1.1.1w
 OPENSSL_TAG_NAME=OpenSSL_1_1_1w
+OPENSSL_ROOT=/usr/local/ssl
 # Check openssl root (install dir) for openssl, otherwise, download, build and install
 function ensure-openssl() {
     if $BUILD_OPENSSL; then
@@ -94,23 +94,24 @@ function ensure-openssl() {
             if ! is-openssl-built; then
                 build-openssl
             fi
-            install-openssl ${OPENSSL_ROOT}
+            install-openssl
             echo " - OpenSSL 1.1.1w successfully installed @ ${OPENSSL_ROOT}"
             echo ""
         else
             echo " - OpenSSL 1.1.1w found @ ${OPENSSL_ROOT}"
             echo ""
         fi
-        export LD_LIBRARY_PATH=/opt/openssl/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-        export OPENSSL_ROOT_DIR=/opt/openssl
-        export PKG_CONFIG_PATH=/opt/openssl/lib/pkgconfig
+        do-openssl-postinstall
     fi
 }
 
 # Check previous build of openssl, incl version
 function is-openssl-built() {
     if [[ -x ${TEMP_DIR}/${OPENSSL_NAME}/build/apps/openssl ]]; then
+        TMP_LD_LIB_PATH=${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${${TEMP_DIR}/${OPENSSL_NAME}LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
         openssl_version=$(${TEMP_DIR}/${OPENSSL_NAME}/build/apps/openssl version | awk '{print $2}')
+        export LD_LIBRARY_PATH=${TMP_LD_LIB_PATH}
         if [[ $openssl_version =~ 1.1.1 ]]; then
             return
         fi
@@ -121,7 +122,10 @@ function is-openssl-built() {
 # Check previous install of openssl, incl version
 function is-openssl-installed() {
     if [[ -x ${OPENSSL_ROOT}/bin/openssl ]]; then
+        TMP_LIB_PATH=${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${OPENSSL_ROOT}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
         openssl_version=$(${OPENSSL_ROOT}/bin/openssl version | awk '{print $2}')
+        export LD_LIBRARY_PATH=${TMP_LD_LIB_PATH}
         if [[ $openssl_version =~ 1.1.1 ]]; then
             return
         fi
@@ -130,7 +134,8 @@ function is-openssl-installed() {
 }
 
 function clean-openssl() {
-    execute bash -c "rm -rf ${TEMP_DIR}/${OPENSSL_NAME}"
+    execute bash -c "rm -f ${TEMP_DIR}/${OPENSSL_NAME}.tar.gz \
+        && rm -rf ${TEMP_DIR}/${OPENSSL_NAME}"
 }
 
 # Clone openssl
@@ -162,6 +167,26 @@ function install-openssl() {
     echo "Installing openssl..."
     execute bash -c "cd ${TEMP_DIR}/${OPENSSL_NAME} \
         && sudo make install"
+}
+
+function do-openssl-postinstall() {
+    sudo rm -f /usr/local/lib/libcrypto.a
+    sudo rm -f /usr/local/lib/libcrypto.so
+    sudo rm -f /usr/local/lib/libssl.a
+    sudo rm -f /usr/local/lib/libssl.so
+    sudo rm -f /usr/local/lib/libcrypto.so.1.1
+    sudo rm -f /usr/local/lib/libssl.so.1.1
+
+    sudo ln -s ${OPENSSL_ROOT}/lib/libcrypto.a /usr/local/lib
+    sudo ln -s ${OPENSSL_ROOT}/lib/libcrypto.so /usr/local/lib
+    sudo ln -s ${OPENSSL_ROOT}/lib/libssl.a /usr/local/lib
+    sudo ln -s ${OPENSSL_ROOT}/lib/libssl.so /usr/local/lib
+    sudo ln -s ${OPENSSL_ROOT}/lib/libcrypto.so.1.1 /usr/local/lib
+    sudo ln -s ${OPENSSL_ROOT}/lib/libssl.so.1.1 /usr/local/lib
+
+    export LD_LIBRARY_PATH=/usr/local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+    export OPENSSL_ROOT_DIR=${OPENSSL_ROOT}
+    export PKG_CONFIG_PATH=${OPENSSL_ROOT}/lib/pkgconfig
 }
 
 # Check cmake env var definition, otherwise, build if necessary, install and set env
