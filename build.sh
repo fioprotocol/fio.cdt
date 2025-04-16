@@ -194,13 +194,11 @@ if ! is-cdt-built; then
       exit -1
    fi
    popd
-else
-   printf "======= FIO Contract Development Toolkit (CDT) Built =======\n"
 fi
+printf "======= FIO Contract Development Toolkit (CDT) Built =======\n\n"
 
 echo
-printf "============= FIO CDT Build Complete =============\n\n"
-echo
+printf "========== FIO CDT Install Complete ==========\n"
 printf "${bldred}\n"
 printf "      ___                       ___               \n"
 printf "     /\\__\\                     /\\  \\          \n"

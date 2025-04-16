@@ -104,13 +104,11 @@ if ! is-cdt-installed; then
 
    install_symlinks
    create_cmake_symlink "eosio.cdt-config.cmake"
-else
-   printf "======= FIO Contract Development Toolkit (CDT) Installed =======\n"
 fi
+printf "======= FIO Contract Development Toolkit (CDT) Installed =======\n\n"
 
 echo
-printf "============ FIO CDT Install Complete ============\n\n"
-echo
+printf "========== FIO CDT Install Complete ==========\n"
 printf "${bldred}\n"
 printf "      ___                       ___               \n"
 printf "     /\\__\\                     /\\  \\          \n"
