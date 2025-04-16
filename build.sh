@@ -63,6 +63,12 @@ echo "User: ${CURRENT_USER}"
 # echo "git head id: %s" "$( cat .git/refs/heads/master )"
 echo "Current branch: $(execute git rev-parse --abbrev-ref HEAD 2>/dev/null)"
 
+if $VERBOSE; then
+   echo "VERBOSE: ${VERBOSE}"
+   echo "TEMP_DIR: ${TEMP_DIR}"
+   echo "FIO_CDT_APTS_DIR: ${FIO_CDT_APTS_DIR}"
+fi
+
 # Checks for Arch and OS + Support for tests setting them manually
 ## Necessary for linux exclusion while running bats tests/bash-bats/*.sh
 [[ -z "${ARCH}" ]] && export ARCH=$(uname)
@@ -107,83 +113,90 @@ ensure-cmake
 
 echo
 
-printf "\t=========== Building FIO Contract Development Toolkit (CDT) ===========\n"
+if ! is-cdt-built; then
+   RED='\033[0;31m'
+   NC='\033[0m'
+   txtbld=$(tput bold)
+   bldred=${txtbld}$(tput setaf 1)
+   txtrst=$(tput sgr0)
 
-RED='\033[0;31m'
-NC='\033[0m'
-txtbld=$(tput bold)
-bldred=${txtbld}$(tput setaf 1)
-txtrst=$(tput sgr0)
+   printf "\t=========== Building FIO Contract Development Toolkit (CDT) ===========\n"
 
-if [[ "$ARCH" == "Darwin" ]]; then
-   BOOST=/usr/local
-   CXX_COMPILER=g++
-   export ARCH="Darwin"
-   bash ./scripts/eosio_build_darwin.sh
-else
-   case "$NAME" in
-   "Amazon Linux AMI")
-      bash ./scripts/eosio_build_amazon.sh
-      ;;
-   "CentOS Linux")
-      export CMAKE=${HOME}/opt/cmake/bin/cmake
-      bash ./scripts/eosio_build_centos.sh
-      ;;
-   "elementary OS")
-      bash ./scripts/eosio_build_ubuntu.sh
-      ;;
-   "Fedora")
-      bash ./scripts/eosio_build_fedora.sh
-      ;;
-   "Linux Mint")
-      bash ./scripts/eosio_build_ubuntu.sh
-      ;;
-   "Ubuntu")
-      bash ./scripts/eosio_build_ubuntu.sh
-      if [[ $? -ne 0 ]]; then
+   # cleanup old build directory
+   [[ -d ${BUILD_DIR} ]] && execute rm -rf ${BUILD_DIR} 
+   execute mkdir -p ${BUILD_DIR}
+
+   if [[ "$ARCH" == "Darwin" ]]; then
+      BOOST=/usr/local
+      CXX_COMPILER=g++
+      export ARCH="Darwin"
+      bash ./scripts/eosio_build_darwin.sh
+   else
+      case "$NAME" in
+      "Amazon Linux AMI")
+         bash ./scripts/eosio_build_amazon.sh
+         ;;
+      "CentOS Linux")
+         export CMAKE=${HOME}/opt/cmake/bin/cmake
+         bash ./scripts/eosio_build_centos.sh
+         ;;
+      "elementary OS")
+         bash ./scripts/eosio_build_ubuntu.sh
+         ;;
+      "Fedora")
+         bash ./scripts/eosio_build_fedora.sh
+         ;;
+      "Linux Mint")
+         bash ./scripts/eosio_build_ubuntu.sh
+         ;;
+      "Ubuntu")
+         bash ./scripts/eosio_build_ubuntu.sh
+         if [[ $? -ne 0 ]]; then
+            exit 1
+         fi
+         ;;
+      "Debian GNU/Linux")
+         bash ./scripts/eosio_build_ubuntu.sh
+         ;;
+      *)
+         printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
          exit 1
-      fi
-      ;;
-   "Debian GNU/Linux")
-      bash ./scripts/eosio_build_ubuntu.sh
-      ;;
-   *)
-      printf "\\n\\tUnsupported Linux Distribution. Exiting now.\\n\\n"
+         ;;
+      esac
+   fi
+
+   #check submodules
+   if [ $(($(git submodule status --recursive | grep -c "^[+\-]"))) -gt 0 ]; then
+      printf "\\n\\tgit submodules are not up to date.\\n"
+      printf "\\tPlease run the command 'git submodule update --init --recursive'.\\n"
       exit 1
-      ;;
-   esac
-fi
-
-#check submodules
-if [ $(($(git submodule status --recursive | grep -c "^[+\-]"))) -gt 0 ]; then
-   printf "\\n\\tgit submodules are not up to date.\\n"
-   printf "\\tPlease run the command 'git submodule update --init --recursive'.\\n"
-   exit 1
-fi
-
-# Apply patches for ubuntu 20+
-echo
-if [[ "${ARCH}" == 'Linux' && "${NAME}" == "Ubuntu" ]]; then
-   if [[ "${VERSION_ID}" == "20.04" ]]; then
-      apply-clang-ubuntu20-patches
    fi
-   if [[ "${VERSION_ID}" == "22.04" ]]; then
-      apply-clang-ubuntu22-patches
+
+   # Apply patches for ubuntu 20+
+   echo
+   if [[ "${ARCH}" == 'Linux' && "${NAME}" == "Ubuntu" ]]; then
+      if [[ "${VERSION_ID}" == "20.04" ]]; then
+         apply-clang-ubuntu20-patches
+      fi
+      if [[ "${VERSION_ID}" == "22.04" ]]; then
+         apply-clang-ubuntu22-patches
+      fi
    fi
-fi
 
-mkdir -p build
-pushd build
+   pushd build
 
-"${CMAKE}" -DCMAKE_INSTALL_PREFIX=${FIO_CDT_INSTALL_DIR}/eosio.cdt ../
-if [ $? -ne 0 ]; then
-   exit -1
+   "${CMAKE}" -DCMAKE_INSTALL_PREFIX=${FIO_CDT_INSTALL_DIR}/eosio.cdt ../
+   if [ $? -ne 0 ]; then
+      exit -1
+   fi
+   make -j${JOBS}
+   if [ $? -ne 0 ]; then
+      exit -1
+   fi
+   popd
+else
+   printf "\t=========== FIO Contract Development Toolkit (CDT) Built ===========\n"
 fi
-make -j${JOBS}
-if [ $? -ne 0 ]; then
-   exit -1
-fi
-popd
 
 echo
 printf "\t=========== FIO CDT Build Complete ===========\n\n"
