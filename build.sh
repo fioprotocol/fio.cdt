@@ -195,11 +195,11 @@ if ! is-cdt-built; then
    fi
    popd
 else
-   printf "\t=========== FIO Contract Development Toolkit (CDT) Built ===========\n"
+   printf "======= FIO Contract Development Toolkit (CDT) Built =======\n"
 fi
 
 echo
-printf "\t=========== FIO CDT Build Complete ===========\n\n"
+printf "============= FIO CDT Build Complete =============\n\n"
 echo
 printf "${bldred}\n"
 printf "      ___                       ___               \n"
