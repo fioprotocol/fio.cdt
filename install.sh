@@ -81,25 +81,34 @@ create_cmake_symlink() {
    ln -sf ${FIO_CDT_INSTALL_DIR}/eosio.cdt/lib/cmake/eosio.cdt/$1 $1
    popd
 }
-if [ ! -d "${BUILD_DIR}" ]; then
+
+if ! is-cdt-built; then
    printf "\\n\\tError, build.sh has not ran.  Please run ./build.sh first!\\n\\n"
    exit -1
 fi
 
-if ! pushd "${BUILD_DIR}"; then
-   printf "Unable to enter build directory %s.\\n Exiting now.\\n" "${BUILD_DIR}"
-   exit 1
+if ! is-cdt-installed; then
+   if ! pushd "${BUILD_DIR}"; then
+      printf "Unable to enter build directory %s.\\n Exiting now.\\n" "${BUILD_DIR}"
+      exit 1
+   fi
+
+   # Clean out any previous install
+   rm -rf /usr/local/eosio.cdt
+   
+   if ! make install; then
+      printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing FIO.cdt has exited with the above error.\\n\\n"
+      exit -1
+   fi
+   popd
+
+   install_symlinks
+   create_cmake_symlink "eosio.cdt-config.cmake"
 fi
+printf "======= FIO Contract Development Toolkit (CDT) Installed =======\n\n"
 
-if ! make install; then
-   printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing FIO.cdt has exited with the above error.\\n\\n"
-   exit -1
-fi
-popd
-
-install_symlinks
-create_cmake_symlink "eosio.cdt-config.cmake"
-
+echo
+printf "========== FIO CDT Install Complete ==========\n"
 printf "${bldred}\n"
 printf "      ___                       ___               \n"
 printf "     /\\__\\                     /\\  \\          \n"
